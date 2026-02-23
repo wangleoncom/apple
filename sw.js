@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ld-qa-v7.2.1';
+const CACHE_NAME = 'ld-qa-v7.5';
 const OFFLINE_URL = './offline.html'; // 🌟 新增：專屬斷線備援頁面
 
 const ASSETS = [
