@@ -8,6 +8,7 @@
     <link rel="icon" href="./images/basic/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="./images/basic/icon.png">
     <meta name="theme-color" content="#fdf2f8">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -22,13 +23,8 @@
     <script src="./quiz_db.js"></script>
     
     <script>
-        // 隱藏 Console 並攔截錯誤
-        window.onerror = function(msg, url, line, col, error) {
-            const app = document.querySelector('[x-data]')?.__x.$data;
-            if(app && typeof app.showHttpError === 'function') app.showHttpError(500, `Internal Error: ${msg}`);
-            return true;
-        };
-        console.log = () => {}; console.warn = () => {}; console.error = () => {};
+        // 🌟 修復錯誤攔截器，避免 Alpine 崩潰時引發二次錯誤
+        window.onerror = function(msg) { console.warn("System Warning:", msg); return false; };
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
@@ -45,9 +41,7 @@
                         'popup': 'popup 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                         'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                     },
-                    colors: { 
-                        brand: { pink: '#ec4899', purple: '#8b5cf6' }
-                    },
+                    colors: { brand: { pink: '#ec4899', purple: '#8b5cf6' } },
                     keyframes: {
                         float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
                         blob: { "0%": { transform: "translate(0px, 0px) scale(1)" }, "33%": { transform: "translate(30px, -30px) scale(1.1)" }, "66%": { transform: "translate(-20px, 20px) scale(0.9)" }, "100%": { transform: "translate(0px, 0px) scale(1)" } },
@@ -62,7 +56,6 @@
         body { font-family: 'Rounded Mplus 1c', sans-serif; background-color: #f8fafc; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .dark body { background-color: #0f172a; color: #e2e8f0; }
         
-        /* 背景動畫 */
         .liquid-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: radial-gradient(circle at 50% 50%, #fdf2f8 0%, #eef2ff 100%); transition: background 0.5s; }
         .dark .liquid-bg { background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0f172a 100%); }
         .liquid-blob { position: absolute; filter: blur(80px); opacity: 0.5; will-change: transform; mix-blend-mode: multiply; }
@@ -79,7 +72,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         
-        /* 卡片翻轉效果 */
         .perspective-1000 { perspective: 1000px; }
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
@@ -104,7 +96,7 @@
             <div class="absolute inset-0 rounded-full border-[6px] border-pink-100 dark:border-slate-700 animate-ping"></div>
             <img src="./images/basic/icon.png" class="relative z-10 w-full h-full rounded-full object-cover shadow-2xl border-4 border-white dark:border-slate-800">
         </div>
-        <div class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 tracking-wider">鹿 QA v7.2</div>
+        <div class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 tracking-wider">鹿 QA v7.2.1</div>
         <div class="text-[10px] font-bold text-slate-400 mt-2 tracking-[0.3em]">SYSTEM INITIALIZING</div>
     </div>
 
@@ -141,7 +133,6 @@
     <main class="flex-grow pt-24 pb-28 px-4 w-full max-w-6xl mx-auto">
         
         <div x-show="currentTab === 'home'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4">
-            
             <div class="glass-panel rounded-[2.5rem] p-6 mb-8 relative overflow-hidden flex flex-col md:flex-row items-center gap-6 group">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-pink-300/20 to-transparent rounded-full blur-3xl -mr-10 -mt-10"></div>
                 <div class="relative shrink-0"><img src="./images/basic/icon.png" class="w-24 h-24 rounded-[2rem] shadow-2xl border-[3px] border-white dark:border-slate-600 object-cover"></div>
@@ -152,11 +143,9 @@
                     </p>
                     <div class="flex justify-center md:justify-start gap-3">
                         <a href="https://www.tiktok.com/@ld.1003_" target="_blank" class="px-5 py-2.5 bg-black text-white rounded-full flex items-center gap-2 hover:scale-105 transition-transform shadow-lg">
-                            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
                             <span class="text-xs font-bold">TikTok</span>
                         </a>
                         <a href="https://www.instagram.com/ld.1003_/" target="_blank" class="px-5 py-2.5 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 text-white rounded-full flex items-center gap-2 hover:scale-105 transition-transform shadow-lg">
-                            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
                             <span class="text-xs font-bold">Instagram</span>
                         </a>
                     </div>
@@ -305,23 +294,24 @@
                          <button @click="checkAnswer(opt)" :disabled="hasAnswered" class="w-full p-4 rounded-2xl text-left font-bold border-2 transition-all relative" 
                                  :class="[
                                     !hasAnswered ? 'bg-white dark:bg-slate-800 hover:border-pink-300 dark:text-white border-transparent shadow-sm' : '',
-                                    hasAnswered && opt === currentQuestion.a ? 'bg-green-50 border-green-500 text-green-700 dark:bg-green-900/30 dark:text-green-300' : '',
-                                    hasAnswered && selectedOption === opt && opt !== currentQuestion.a ? 'bg-red-50 border-red-400 text-red-700 dark:bg-red-900/30 dark:text-red-300' : '',
-                                    hasAnswered && opt !== currentQuestion.a && selectedOption !== opt ? 'opacity-30 bg-white dark:bg-slate-800 border-transparent dark:text-white' : ''
+                                    hasAnswered && opt === currentQuestion?.a ? 'bg-green-50 border-green-500 text-green-700 dark:bg-green-900/30 dark:text-green-300' : '',
+                                    hasAnswered && selectedOption === opt && opt !== currentQuestion?.a ? 'bg-red-50 border-red-400 text-red-700 dark:bg-red-900/30 dark:text-red-300' : '',
+                                    hasAnswered && opt !== currentQuestion?.a && selectedOption !== opt ? 'opacity-30 bg-white dark:bg-slate-800 border-transparent dark:text-white' : ''
                                  ]">
                             <span x-text="opt" class="relative z-10"></span>
-                            <span x-show="hasAnswered && opt === currentQuestion.a" class="absolute right-4 top-1/2 -translate-y-1/2 text-xl">✅</span>
-                            <span x-show="hasAnswered && selectedOption === opt && opt !== currentQuestion.a" class="absolute right-4 top-1/2 -translate-y-1/2 text-xl">❌</span>
+                            <span x-show="hasAnswered && opt === currentQuestion?.a" class="absolute right-4 top-1/2 -translate-y-1/2 text-xl">✅</span>
+                            <span x-show="hasAnswered && selectedOption === opt && opt !== currentQuestion?.a" class="absolute right-4 top-1/2 -translate-y-1/2 text-xl">❌</span>
                          </button>
                      </template>
                  </div>
                  <button x-show="hasAnswered" @click="nextQuestion()" class="mt-8 w-full py-4 bg-slate-800 text-white rounded-xl font-black shadow-lg animate-slide-up" x-text="currentQuizIndex === 9 ? '查看最終成績 🏆' : '下一題 ➜'"></button>
              </div>
         </div>
+
     </main>
 
     <div class="fixed bottom-6 left-0 right-0 z-50 px-6 pointer-events-none safe-area-bottom">
-        <nav class="pointer-events-auto flex items-center justify-between p-2 rounded-[2.5rem] glass-nav shadow-2xl max-w-sm mx-auto border border-white/60">
+        <nav class="pointer-events-auto flex items-center justify-between p-2 rounded-[2.5rem] glass-nav shadow-2xl max-w-[320px] mx-auto border border-white/60">
             <template x-for="tab in tabs" :key="tab.id">
                 <button @click="changeTab(tab.id); playSound('click')" class="relative w-full py-3 rounded-[2rem] flex flex-col items-center justify-center gap-1 transition-all duration-300 group">
                     <span class="text-xl transition-transform group-active:scale-90" :class="currentTab === tab.id ? '-translate-y-1' : 'grayscale opacity-50 dark:opacity-40'" x-text="tab.icon"></span>
@@ -365,7 +355,6 @@
             
             <div class="inline-block px-12 py-5 bg-gradient-to-r from-[#d4af37] to-[#e5c158] text-white text-4xl font-black rounded-full shadow-xl tracking-wider" x-text="quizLevelTitle"></div>
         </div>
-        
         <div class="watermark text-[#d4af37]/40">https://wangleoncom.github.io/ldweb</div>
     </div>
 
@@ -471,7 +460,7 @@
 
                 <button @click="openAppShare()" class="w-full py-3 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition-transform mt-4">分享此網站 📤</button>
             </div>
-            <div class="text-center mt-6 text-[10px] text-slate-400 font-mono">v7.2.0 · wangleoncom.github.io</div>
+            <div class="text-center mt-6 text-[10px] text-slate-400 font-mono">v7.2.1 · wangleoncom.github.io</div>
         </div>
     </div>
 
@@ -487,9 +476,15 @@
                     "住哪": "家鄉", "哪裡人": "家鄉", 
                     "開台": "直播", "賴": "Line"
                 };
+                
                 this.fuse = new Fuse(db, {
-                    keys: [{ name: 'q', weight: 0.5 }, { name: 'tags', weight: 0.3 }, { name: 'a', weight: 0.2 }],
-                    threshold: 0.4, ignoreLocation: true
+                    keys: [
+                        { name: 'q', weight: 0.5 },
+                        { name: 'tags', weight: 0.3 }, 
+                        { name: 'a', weight: 0.2 }
+                    ],
+                    threshold: 0.4, 
+                    ignoreLocation: true
                 });
             }
 
@@ -504,6 +499,7 @@
             analyze(query) {
                 const processedQuery = this.process(query);
                 const results = this.fuse.search(processedQuery);
+
                 if (!results || results.length === 0) return { reply: "這個問題考倒麋鹿了...🦌\n換個關鍵字試試看？", accuracy: 0 };
                 
                 const best = results[0];
@@ -511,19 +507,25 @@
                 
                 if (acc > 40) return { reply: best.item.a, accuracy: acc };
                 if (acc > 20) return { reply: `我不確定是不是這個，你是想問「${best.item.q}」嗎？\n\n${best.item.a}`, accuracy: acc };
+                
                 return { reply: "抱歉，我好像沒聽懂...🤔\n您可以試試看搜尋「身高」、「直播」之類的關鍵字喔！", accuracy: acc };
             }
         }
 
-        // 音效引擎
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // 🌟 防當機音效引擎
+        let audioCtx = null;
         function playTone(type = 'success') {
             const s = JSON.parse(localStorage.getItem('deer_settings') || '{}');
-            if (s.sound === false) return; // 如果明確關閉音效才 return
+            if (s.sound === false) return; 
+            
+            // 延遲初始化 AudioContext 避免自動播放政策報錯
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
+            
             if (type === 'click') { 
                 osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); 
@@ -537,15 +539,15 @@
 
         function deerApp() {
             return {
-                appVersion: '7.2.0',
+                appVersion: '7.2.1',
                 isLoading: true, isProcessing: false, loadProgress: 0,
                 currentTab: 'home', scrollY: 0, search: '', flippedCards: [], currentPage: 1, itemsPerPage: 12,
                 chatInput: '', isTyping: false, isListening: false,
                 chatHistory: [{ id: 1, text: "嗨！我是 AI 麋鹿 🦌\n我有更聰明的大腦了，問我看看吧！", isUser: false, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) }],
                 
-                // Quiz 狀態
+                // 🌟 修正測驗系統初始化，防止 undefined 報錯
                 quizStarted: false, quizTakerName: '', currentQuizIndex: 0, quizScore: 0, hasAnswered: false,
-                selectedOption: '', currentQuizSet: [], currentQuestion: null, currentOptions: [],
+                selectedOption: '', currentQuizSet: [], currentQuestion: {}, currentOptions: [],
                 
                 idCardName: '', selectedBg: '', backgrounds: [], generatedIdNumber: 'D'+Math.floor(Math.random()*9000+1000),
                 showSettingsModal: false, settings: { sound: true, darkMode: false, reduceMotion: false, itemsPerPage: 12 },
@@ -566,7 +568,7 @@
                     window.addEventListener('scroll', () => this.scrollY = window.scrollY);
                     
                     this.loadDB();
-                    this.brain = new SmartDeer(this.qaData);
+                    this.brain = new SmartDeer(this.qaData); 
                     await this.loadBackgrounds();
                     
                     let p = 0;
@@ -583,19 +585,27 @@
                 async loadBackgrounds() {
                     for(let i=1; i<=20; i++) {
                         const path = `./images/backgrounds/bg${i}.jpg`;
-                        const img = new Image(); img.src = path;
+                        const img = new Image();
+                        img.src = path;
                         img.onload = () => {
                             if(!this.backgrounds.includes(path)) this.backgrounds.push(path);
-                            this.backgrounds.sort((a,b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
+                            this.backgrounds.sort((a,b) => {
+                                const numA = parseInt(a.match(/\d+/)[0]);
+                                const numB = parseInt(b.match(/\d+/)[0]);
+                                return numA - numB;
+                            });
                             if(!this.selectedBg) this.selectedBg = this.backgrounds[0];
                         };
                     }
                     setTimeout(() => {
-                        if(this.backgrounds.length === 0) { this.backgrounds = ['./images/basic/icon.png']; this.selectedBg = this.backgrounds[0]; }
+                        if(this.backgrounds.length === 0) {
+                            this.backgrounds = ['./images/basic/icon.png'];
+                            this.selectedBg = this.backgrounds[0];
+                        }
                     }, 2000);
                 },
 
-                // --- UI 邏輯 ---
+                // --- UI Logic ---
                 playSound(type) { playTone(type); },
                 changeTab(id) { this.currentTab = id; this.search = ''; this.currentPage = 1; window.scrollTo(0,0); },
                 toggleCard(id) { if(this.flippedCards.includes(id)) this.flippedCards = this.flippedCards.filter(i => i !== id); else this.flippedCards.push(id); playTone('click'); },
@@ -633,11 +643,15 @@
                 prevPage() { if(this.currentPage > 1) { this.currentPage--; window.scrollTo(0,0); playTone('click'); } },
                 nextPage() { if(this.currentPage < this.totalPages) { this.currentPage++; window.scrollTo(0,0); playTone('click'); } },
 
-                // --- AI 聊天邏輯 ---
-                handleChatEnter(e) { if (e.isComposing || e.keyCode === 229) return; this.sendMessage(); },
+                // --- Chat Logic ---
+                handleChatEnter(e) { 
+                    if (e.isComposing || e.keyCode === 229) return; 
+                    this.sendMessage(); 
+                },
                 async sendMessage() {
                     if(!this.chatInput.trim()) return;
-                    const text = this.chatInput; this.chatInput = ''; 
+                    const text = this.chatInput; 
+                    this.chatInput = ''; 
                     
                     this.chatHistory.push({ id: Date.now(), text, isUser: true, status: 'sent', time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
                     playTone('click');
@@ -664,7 +678,7 @@
 
                 startVoice() {
                     const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    if(!Rec) return this.showHttpError(400, "瀏覽器不支援語音輸入 API");
+                    if(!Rec) return this.showHttpError(400, "Browser does not support Speech API");
                     this.isListening = true; this.recognition = new Rec(); this.recognition.lang = 'zh-TW';
                     this.recognition.onresult = (e) => { this.chatInput = e.results[0][0].transcript; this.sendMessage(); };
                     this.recognition.onend = () => { this.isListening = false; };
@@ -672,22 +686,24 @@
                 },
                 stopVoice() { this.isListening = false; if(this.recognition) this.recognition.stop(); },
 
-                // --- 測驗系統邏輯 ---
+                // --- Quiz Logic ---
                 get quizLevelTitle() {
                     const score = this.quizScore * 10;
                     if(score === 100) return '🏆 傳說級鐵粉';
                     if(score >= 80) return '🥇 專業級麋鹿';
                     if(score >= 60) return '🥈 合格小麋鹿';
-                    return '🥉 新手麋鹿';
+                    return '🥉 新手請多看QA';
                 },
+
                 startQuiz() {
-                    if(!this.quizTakerName) return this.showModal('提示', '請輸入名字才能製作獎狀喔！');
+                    if(!this.quizTakerName) return this.showModal('提示', '請輸入名字才能領取成績單喔！');
                     this.quizStarted = true; this.quizScore = 0; this.currentQuizIndex = 0; 
-                    this.currentQuizSet = [...window.deerQuiz_DB].sort(()=>0.5-Math.random()).slice(0, 10);
+                    this.currentQuizSet = [...window.deerQuiz_DB].sort(()=>0.5-Math.random()).slice(0,10);
                     this.loadQuestion();
                 },
                 loadQuestion() { 
-                    this.hasAnswered = false; this.selectedOption = '';
+                    this.hasAnswered = false; 
+                    this.selectedOption = '';
                     this.currentQuestion = this.currentQuizSet[this.currentQuizIndex]; 
                     this.currentOptions = [...this.currentQuestion.options].sort(()=>0.5-Math.random()); 
                 },
@@ -696,9 +712,9 @@
                     if(opt === this.currentQuestion.a) { 
                         this.quizScore++; 
                         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); 
-                        playTone('success');
+                        playTone('success'); 
                     } else {
-                        playTone('click');
+                        playTone('click'); 
                     }
                 },
                 nextQuestion() { 
@@ -711,11 +727,12 @@
                     } 
                 },
 
-                // --- 截圖與分享邏輯 ---
+                // --- ID Card & Capture Logic ---
                 async generateIDCard() { 
                     if(!this.idCardName) return this.showModal('提示', '請輸入暱稱'); 
                     this.capture('idCardTemplate', 'share'); 
                 },
+
                 openShareModal(item) {
                     this.shareItem = item;
                     this.modal = { isOpen: true, title: '分享問題', body: '請選擇分享方式', type: 'shareOption' };
@@ -723,7 +740,9 @@
                     document.getElementById('scA').innerText = item.a;
                     document.getElementById('shareResult').innerHTML = ''; 
                 },
-                async generateImage() { this.capture('shareCardTemplate', 'share'); },
+                async generateImage() {
+                    this.capture('shareCardTemplate', 'share');
+                },
                 copyText() {
                     const text = `Q: ${this.shareItem.q}\nA: ${this.shareItem.a}\n-- 來自 鹿QA`;
                     navigator.clipboard.writeText(text);
@@ -732,11 +751,13 @@
                 
                 async capture(id, type) {
                     this.isProcessing = true;
-                    // 強制置頂解決跑版與截掉問題
+                    // 🌟 強制將視窗滾動回頂部，這是解決 html2canvas 截圖跑版的玄學關鍵！
                     window.scrollTo(0, 0); 
+                    
                     const el = document.getElementById(id);
                     el.classList.remove('off-screen-render'); 
                     await new Promise(r => setTimeout(r, 300));
+                    
                     try {
                         const canvas = await html2canvas(el, { 
                             scale: 2, 
@@ -746,7 +767,7 @@
                         });
                         const img = canvas.toDataURL("image/png");
                         this.modal = { isOpen: true, title: type === 'certificate' ? '測驗完成！' : '生成成功', body: '長按圖片即可儲存到手機相簿', type };
-                        this.$nextTick(() => document.getElementById('shareResult').innerHTML = `<img src="${img}" class="w-full h-auto rounded-lg shadow-md">`);
+                        this.$nextTick(() => document.getElementById('shareResult').innerHTML = `<img src="${img}" class="w-full h-auto rounded-xl shadow-md">`);
                         playTone('success');
                     } catch(e) { 
                         this.showHttpError(500, '圖片生成失敗，請稍後再試。'); 
@@ -763,11 +784,12 @@
                 copyUrl() { navigator.clipboard.writeText(location.href); alert('網址已複製'); },
                 shareToFB() { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}`); },
                 shareToLine() { window.open(`https://line.me/R/msg/text/?${encodeURIComponent(location.href)}`); },
-                showChangelog() { this.showModal('更新日誌', 'v7.2.0 - 終極旗艦版\n✨ 會考升級：題庫擴充至10題\n✨ 動態稱號：成績證明加入階級認證\n✨ 跑版修復：完美解決成績單截圖邊界問題\n✨ 對錯反饋：答錯時即時顯示正確答案', 'info'); },
+                showChangelog() { this.showModal('更新日誌', 'v7.2.1 - 終極旗艦版\n✨ 會考升級：題庫擴充至10題\n✨ 動態稱號：成績證明加入階級認證\n✨ 跑版修復：完美解決成績單截圖邊界問題\n✨ 對錯反饋：答錯時即時顯示正確答案', 'info'); },
                 resetApp() { if(confirm('確定要清除所有設定與快取資料？')) { localStorage.clear(); location.reload(); } },
+                installPWA() { if(this.deferredPrompt) this.deferredPrompt.prompt(); else alert('請使用瀏覽器選單安裝'); },
                 
                 showModal(t, b, type='info') { this.modal = { isOpen: true, title: t, body: b, type }; },
-                showHttpError(code, msg) { this.showModal(`錯誤 ${code}`, msg, 'error'); },
+                showHttpError(code, msg) { this.showModal(`錯誤`, msg, 'error'); },
                 closeModal() { this.modal.isOpen = false; }
             }
         }
