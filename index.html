@@ -3,309 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>鹿 QA 官方粉絲自製</title>
+    <meta name="theme-color" content="#050505">
+    <title>鹿🦌 官方粉絲專屬終端</title>
     
+    <link rel="manifest" href="manifest.json">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <style>
-        /* 🌌 頂級星空黑 & 霓虹粉紫美學 */
+        /* 🌌 頂級深空玻璃美學 */
         :root {
-            --bg-deep: #050505;
-            --bg-ambient: #120d18;
-            --container-bg: #0f111a;
-            --glass-bg: rgba(255, 255, 255, 0.02);
-            --glass-border: rgba(255, 255, 255, 0.05);
+            --app-bg: #050505;
             --accent-pink: #f43f5e;
-            --accent-purple: #8b5cf6;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
         }
 
-        /* 外層大背景：確保在電腦上也有質感 */
         body {
-            background: radial-gradient(circle at 50% 0%, var(--bg-ambient) 0%, var(--bg-deep) 100%);
-            color: var(--text-main);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #08080a;
+            background-image: radial-gradient(circle at 50% -20%, #1a1625 0%, #050505 80%);
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden; /* 隱藏外層滾動，全部在容器內滾動 */
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; margin: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 📱 核心：懸浮應用程式容器 (保證不跑版的關鍵) */
-        #app-container {
-            width: 100%;
-            max-width: 600px; /* 鎖死最大寬度，呈現平板/大手機的精緻感 */
-            height: 100vh;
-            max-height: 100vh;
-            background: var(--container-bg);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 100px rgba(244, 63, 94, 0.05);
+        /* 📱 完美手機模擬器框架 */
+        #device-mockup {
+            width: 100%; height: 100vh;
+            position: relative; background: var(--app-bg);
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* 電腦版時容器會有圓角和邊框 */
-        @media (min-width: 640px) {
-            #app-container {
-                height: 95vh;
-                border-radius: 40px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
+        @media (min-width: 768px) {
+            #device-mockup {
+                width: 400px; height: 850px;
+                border-radius: 45px; border: 10px solid #18181b;
+                box-shadow: 0 0 0 1px #3f3f46, 0 30px 60px rgba(0,0,0,0.8);
             }
+            #device-mockup::before {
+                content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+                width: 120px; height: 32px; background: #000; border-radius: 20px; z-index: 999;
+            }
+            .pt-safe { padding-top: 50px !important; }
         }
 
-        /* 內部滾動條隱藏但可滾動 */
-        .scrollable-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 100px; }
-        .scrollable-content::-webkit-scrollbar { display: none; }
+        /* 隱藏滾動條 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 質感卡片 */
-        .glass-panel {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            backdrop-filter: blur(12px);
-            transition: all 0.3s ease;
-        }
-        .hover-glass:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(244, 63, 94, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(244, 63, 94, 0.1);
+        /* 高階玻璃卡片 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px; backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* 頁面切換防禦機制 */
-        .page-section { display: none !important; opacity: 0; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .page-section.active { display: block !important; }
-        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        /* 🚀 專業級貝茲曲線動畫 */
+        .page { display: none !important; opacity: 0; }
+        .page.active { display: flex !important; animation: appFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        @keyframes appFadeIn { 0% { opacity: 0; transform: translateY(15px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* 底部導航 */
-        .nav-capsule {
-            background: rgba(15, 17, 26, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .nav-item { transition: all 0.3s ease; opacity: 0.3; }
+        /* 打字指示器動畫 */
+        .typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #94a3b8; margin: 0 2px; animation: typeBounce 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typeBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* 聊天氣泡進場 */
+        .msg-enter { animation: msgSlide 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        @keyframes msgSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 動態時間軸 (錯落設計) */
+        .timeline-item { opacity: 0; transform: translateY(20px); transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .timeline-item.show { opacity: 1; transform: translateY(0); }
+
+        /* 底部導航欄 */
+        .bottom-nav { background: rgba(15, 15, 20, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .nav-item { transition: all 0.3s ease; opacity: 0.35; }
         .nav-item.active { opacity: 1; color: var(--accent-pink); transform: translateY(-3px); }
-        .nav-item.active .icon-wrapper { text-shadow: 0 0 15px rgba(244, 63, 94, 0.6); }
+        .nav-item.active .icon-box { text-shadow: 0 0 15px rgba(244, 63, 94, 0.7); }
 
-        #splash-screen { position: absolute; inset: 0; z-index: 999; background: var(--container-bg); display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease; }
+        /* 滑桿美化 */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #f43f5e; cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px rgba(244,63,94,0.5);}
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #27272a; border-radius: 10px; }
+
+        .swal2-popup.custom-modal { background: #121215; border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        #splash { position: absolute; inset: 0; z-index: 999; background: #050505; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.4s ease; }
     </style>
 </head>
-<body>
+<body class="selection:bg-pink-500 selection:text-white text-[14px]" id="app-body">
 
-    <div id="app-container">
+    <div id="device-mockup">
         
-        <div id="splash-screen">
-            <div class="w-24 h-24 rounded-full overflow-hidden border border-slate-700 shadow-[0_0_40px_rgba(244,63,94,0.3)] mb-6 animate__animated animate__pulse animate__infinite">
-                <img src="avatar-main.jpg" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=鹿&background=f43f5e&color=fff'">
+        <div id="splash">
+            <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-700 shadow-[0_0_40px_rgba(244,63,94,0.3)] mb-5">
+                <img src="avatar-main.jpg" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23f43f5e\'/><text x=\'50\' y=\'65\' font-size=\'40\' text-anchor=\'middle\' fill=\'white\'>鹿</text></svg>'">
             </div>
-            <h1 class="text-2xl font-black tracking-widest text-white mb-2">鹿 QA <span class="text-pink-500 text-lg">v8.2</span></h1>
-            <p id="loading-text" class="text-slate-500 text-[10px] tracking-[0.4em] font-bold">SYSTEM BOOTING...</p>
+            <h1 class="text-2xl font-black tracking-widest text-white mb-2">鹿 QA <span class="text-pink-500 text-lg">v11.1</span></h1>
+            <p class="text-slate-500 text-[10px] tracking-[0.4em] font-bold animate-pulse">系統啟動中...</p>
         </div>
 
-        <header class="w-full z-40 bg-[#0f111a]/90 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-white/5 shrink-0 relative">
+        <header class="w-full z-40 bg-[#050505]/80 backdrop-blur-xl px-5 py-3 pt-safe flex justify-between items-center border-b border-white/5 shrink-0">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full overflow-hidden border border-slate-700">
-                    <img src="avatar-main.jpg" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=鹿&background=f43f5e&color=fff'">
+                <div class="w-9 h-9 rounded-full overflow-hidden border border-slate-700">
+                    <img src="avatar-main.jpg" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23f43f5e\'/></svg>'">
                 </div>
                 <div>
-                    <h1 class="font-bold text-[15px] leading-tight text-white tracking-wide">鹿 QA</h1>
-                    <p class="text-[9px] text-slate-400 font-medium">OFFICIAL FAN APP</p>
+                    <h1 class="font-bold text-[15px] leading-tight text-white tracking-wide">粉絲資訊站</h1>
+                    <p class="text-[9px] text-pink-500 font-black tracking-widest">Fan Information Station</p>
                 </div>
             </div>
-            <button onclick="toggleSettings()" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:bg-white/10 transition">
-                <i class="fas fa-cog text-sm"></i>
+            <button onclick="toggleSettings()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition active:scale-90">
+                <i class="fas fa-ellipsis-v text-xs"></i>
             </button>
         </header>
 
-        <main class="scrollable-content px-5 pt-6 relative">
+        <main class="flex-1 relative overflow-hidden" id="main-container">
             
-            <section id="page-home" class="page-section active">
-                <div class="glass-panel p-6 mb-6 flex items-center gap-5 relative overflow-hidden">
-                    <div class="w-20 h-20 shrink-0 rounded-full overflow-hidden border-2 border-slate-700 z-10">
-                        <img src="avatar-main.jpg" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=鹿&background=f43f5e&color=fff'">
-                    </div>
-                    <div class="z-10">
-                        <h2 class="text-xl font-black mb-1 text-white flex items-center gap-2">鹿 🦌</h2>
-                        <p class="text-[11px] text-pink-400 mb-2 font-bold tracking-widest">天秤座 | 170cm | 42kg</p>
-                        <p class="text-xs text-slate-400 mb-3 leading-relaxed">收錄所有小秘密與直播常見問題！</p>
-                        <div class="flex gap-2">
-                            <a href="https://www.tiktok.com/" target="_blank" class="bg-white/10 text-white px-3 py-1.5 rounded-full text-[10px] font-bold border border-white/10 hover:bg-white/20 transition"><i class="fab fa-tiktok"></i> TikTok</a>
-                            <a href="https://www.instagram.com/" target="_blank" class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1.5 rounded-full text-[10px] font-bold hover:opacity-90 transition"><i class="fab fa-instagram"></i> Instagram</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-panel mb-6 px-4 py-3 flex items-center gap-3 bg-black/20">
-                    <i class="fas fa-search text-slate-500 text-sm"></i>
-                    <input type="text" id="qa-search" oninput="filterQA()" placeholder="搜尋問題... (例: 身高、傳說)" class="w-full bg-transparent border-none outline-none text-sm text-white placeholder-slate-600">
-                </div>
-
-                <div id="qa-list" class="flex flex-col gap-4"></div>
-                <div id="pagination-controls" class="flex justify-center items-center gap-5 mt-8 mb-4 text-sm"></div>
-            </section>
-
-            <section id="page-ai" class="page-section h-full flex flex-col">
-                <div class="glass-panel p-3 mb-4 flex items-center gap-3 bg-black/20 shrink-0">
-                    <div class="w-8 h-8 rounded-full overflow-hidden border border-slate-700 relative">
-                        <img src="avatar-main.jpg" class="w-full h-full object-cover opacity-80" onerror="this.src='https://ui-avatars.com/api/?name=AI&background=8b5cf6&color=fff'">
-                        <div class="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-black"></div>
+            <section id="page-home" class="page active flex-col h-full overflow-y-auto no-scrollbar px-4 pt-5 pb-[100px]">
+                <div class="glass-card p-5 mb-5 flex items-center gap-4 bg-gradient-to-br from-pink-500/10 to-transparent">
+                    <div class="w-16 h-16 shrink-0 rounded-full overflow-hidden border border-pink-500/30">
+                        <img src="avatar-main.jpg" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23f43f5e\'/></svg>'">
                     </div>
                     <div>
-                        <h2 class="font-bold text-sm text-white">AI 麋鹿</h2>
-                        <p class="text-[9px] text-pink-400 font-bold tracking-wider">在線回答中</p>
+                        <h2 class="text-lg font-black mb-1 text-white">鹿 🦌</h2>
+                        <p class="text-[10px] text-pink-400 mb-2 font-bold tracking-widest">天秤座 | 170cm | 42kg</p>
+                        <div class="flex gap-2">
+                            <a href="https://www.tiktok.com/@ld.1003_" target="_blank" class="bg-black/60 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold border border-white/10"><i class="fab fa-tiktok"></i> TikTok</a>
+                            <a href="https://www.instagram.com/ld.1003_" target="_blank" class="bg-gradient-to-r from-pink-600 to-purple-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold"><i class="fab fa-instagram"></i>  Instagram</a>
+                        </div>
                     </div>
                 </div>
 
-                <div id="chat-window" class="flex-1 overflow-y-auto space-y-4 mb-4 scroll-smooth pr-1 pb-4 flex flex-col">
-                    <div class="max-w-[85%] self-start glass-panel p-4 shadow-lg text-sm leading-relaxed border border-white/5 bg-white/5">
-                        嗨！我是 AI 麋鹿 🦌<br>找不到的問題，直接問我吧！
+                <div class="glass-card mb-5 px-4 py-3 flex items-center gap-3 bg-black/40">
+                    <i class="fas fa-search text-pink-500 text-sm"></i>
+                    <input type="text" id="qa-search" oninput="filterQA()" placeholder="關鍵字搜尋 (例: 身高、傳說)" class="w-full bg-transparent border-none outline-none text-sm text-white">
+                </div>
+
+                <div id="qa-list" class="flex flex-col gap-3"></div>
+                <div id="pagination-controls" class="flex justify-center items-center gap-4 mt-6 text-xs"></div>
+            </section>
+
+            <section id="page-ai" class="page flex-col h-full">
+                
+                <div class="px-4 pt-3 pb-2 shrink-0">
+                    <div class="glass-card p-1.5 flex bg-black/50 rounded-2xl relative">
+                        <div id="model-slider" class="absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-6px)] bg-slate-800 rounded-xl transition-all duration-300 ease-out shadow-md"></div>
+                        
+                        <button onclick="switchAIModel(1)" class="relative z-10 flex-1 py-1.5 text-xs font-bold text-white flex items-center justify-center gap-2" id="btn-model-1">
+                            <img src="ai-model-1.jpg" class="w-5 h-5 rounded-full object-cover border border-blue-400" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%233b82f6\'/><text x=\'50\' y=\'65\' font-size=\'40\' text-anchor=\'middle\' fill=\'white\'>智</text></svg>'">
+                            精準麋鹿
+                        </button>
+                        <button onclick="switchAIModel(2)" class="relative z-10 flex-1 py-1.5 text-xs font-bold text-slate-400 flex items-center justify-center gap-2 transition-colors" id="btn-model-2">
+                            <img src="ai-model-2.jpg" class="w-5 h-5 rounded-full object-cover border border-pink-400 opacity-50 transition-opacity" id="img-model-2" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23f43f5e\'/><text x=\'50\' y=\'65\' font-size=\'40\' text-anchor=\'middle\' fill=\'white\'>鹿</text></svg>'">
+                            元氣麋鹿
+                        </button>
                     </div>
                 </div>
 
-                <div class="glass-panel p-2 pl-4 flex items-center gap-3 bg-black/40 border border-slate-700 shrink-0 sticky bottom-0">
-                    <input type="text" id="ai-input" onkeypress="handleAIKeyPress(event)" placeholder="輸入問題..." class="flex-1 bg-transparent border-none outline-none text-sm text-white py-2">
-                    <button onclick="sendAIMessage()" class="w-9 h-9 bg-pink-600 hover:bg-pink-500 rounded-full flex items-center justify-center text-white transition shadow-lg">
-                        <i class="fas fa-paper-plane text-xs"></i>
+                <div class="px-4 py-2 flex items-center gap-3 shrink-0">
+                    <div class="relative w-10 h-10">
+                        <img id="ai-current-avatar" src="ai-model-1.jpg" class="w-10 h-10 rounded-full object-cover border-2 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.4)] transition-all duration-300" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%233b82f6\'/><text x=\'50\' y=\'65\' font-size=\'40\' text-anchor=\'middle\' fill=\'white\'>智</text></svg>'">
+                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#050505]"></div>
+                    </div>
+                    <div>
+                        <h2 id="ai-current-name" class="text-[14px] font-bold text-blue-400">精準麋鹿</h2>
+                        <p class="text-[10px] text-slate-400 font-bold tracking-widest">系統在線運作中</p>
+                    </div>
+                </div>
+
+                <div id="chat-window" class="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 space-y-4 flex flex-col">
+                    <div class="max-w-[85%] self-start glass-card p-4 shadow-lg text-sm leading-relaxed border-t-2 border-t-blue-500 ai-msg-card">
+                        您好，目前已為您載入【精準麋鹿】。<br>我將嚴格比對資料庫，為您提供最正確的解答。
+                    </div>
+                </div>
+
+                <div class="shrink-0 px-4 pb-[90px] pt-2 bg-gradient-to-t from-[#050505] to-transparent">
+                    <div class="glass-card p-1.5 pl-4 flex items-center gap-3 bg-[#121215] border border-slate-700 shadow-2xl rounded-3xl">
+                        <input type="text" id="ai-input" onkeypress="handleAIKeyPress(event)" placeholder="輸入問題..." class="flex-1 bg-transparent border-none outline-none text-sm text-white py-2">
+                        <button onclick="sendAIMessage()" class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all active:scale-90" id="ai-send-btn">
+                            <i class="fas fa-arrow-up text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-timeline" class="page flex-col h-full overflow-y-auto no-scrollbar px-5 pt-6 pb-[100px]">
+                <h2 class="text-lg font-black text-center mb-8 text-white tracking-widest"><i class="fas fa-map-signs text-pink-500 mr-2"></i>成長軌跡</h2>
+                <div class="relative border-l-[2px] border-slate-800 ml-3 pb-8" id="timeline-container">
+                    <div class="relative pl-6 timeline-item tl-spacing-1">
+                        <div class="absolute w-3 h-3 bg-pink-500 rounded-full -left-[7px] top-2 border-[3px] border-[#050505]"></div>
+                        <div class="glass-card p-4">
+                            <span class="text-[9px] text-pink-400 font-black tracking-widest">2021/11/29</span>
+                            <h3 class="text-sm font-bold text-white mt-1 mb-1">初次亮相</h3>
+                            <p class="text-[11px] text-slate-400">在 TikTok 宇宙發布第一支影片。</p>
+                        </div>
+                    </div>
+                    <div class="relative pl-6 timeline-item mt-10"> 
+                        <div class="absolute w-3 h-3 bg-purple-500 rounded-full -left-[7px] top-2 border-[3px] border-[#050505]"></div>
+                        <div class="glass-card p-4">
+                            <span class="text-[9px] text-purple-400 font-black tracking-widest">2024/10/29</span>
+                            <h3 class="text-sm font-bold text-white mt-1 mb-1">一萬訂閱達成</h3>
+                            <p class="text-[11px] text-slate-400">里程碑突破，粉絲逐漸凝聚。</p>
+                        </div>
+                    </div>
+                    <div class="relative pl-6 timeline-item mt-6">
+                        <div class="absolute w-4 h-4 bg-pink-500 rounded-full -left-[9px] top-1 border-[3px] border-[#050505] shadow-[0_0_10px_rgba(244,63,94,0.8)]"></div>
+                        <div class="glass-card p-4 bg-gradient-to-br from-pink-500/20 to-transparent border-pink-500/30">
+                            <span class="text-[9px] text-pink-400 font-black tracking-widest">2025/03/17</span>
+                            <h3 class="text-base font-bold text-white mt-1 mb-1">十萬大軍集結</h3>
+                            <p class="text-xs text-slate-300">官方認證十萬粉絲！</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-id" class="page flex-col h-full overflow-y-auto no-scrollbar px-5 pt-8 pb-[100px]">
+                <div class="glass-card p-6 text-center border-t-2 border-t-pink-500 bg-gradient-to-b from-pink-500/5 to-transparent relative overflow-hidden">
+                    <i class="fas fa-fingerprint absolute -right-4 -bottom-4 text-7xl text-pink-500/10"></i>
+                    <div class="w-14 h-14 mx-auto bg-pink-500/10 rounded-full flex items-center justify-center text-pink-500 text-xl mb-4 border border-pink-500/20"><i class="fas fa-id-card-clip"></i></div>
+                    <h2 class="text-lg font-bold mb-2 text-white tracking-wide">麋鹿認證</h2>
+                    <p class="text-[11px] text-slate-400 mb-8 leading-relaxed">系統將為您生成您專屬的認證卡。</p>
+                    
+                    <div class="text-left mb-2 text-[10px] text-pink-400 font-bold pl-2">輸入專屬識別名</div>
+                    <input type="text" id="id-name" maxlength="10" placeholder="例如：王岦恩" class="w-full bg-black/60 border border-slate-700 rounded-xl py-4 px-4 text-white text-center mb-8 focus:outline-none focus:border-pink-500 text-sm font-bold shadow-inner">
+                    
+                    <button onclick="generateHoloIDCard()" class="w-full bg-white text-black py-4 rounded-xl font-black text-sm shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-95 transition-transform">
+                        <i class="fas fa-qrcode mr-1"></i> 開始編碼生成
                     </button>
                 </div>
+                <canvas id="id-canvas" width="1080" height="1600" style="display:none;"></canvas>
             </section>
 
-            <section id="page-timeline" class="page-section">
-                <h2 class="text-xl font-black text-center mb-8 text-white tracking-widest">成長大事記</h2>
-                <div class="relative border-l-[2px] border-slate-700 ml-4 space-y-8">
-                    <div class="relative pl-6">
-                        <div class="absolute w-4 h-4 bg-pink-500 rounded-full -left-[9px] top-1 border-4 border-[#0f111a] shadow-[0_0_10px_rgba(244,63,94,0.6)]"></div>
-                        <div class="glass-panel p-5">
-                            <span class="text-[9px] text-pink-400 font-black tracking-widest bg-pink-500/10 px-2 py-1 rounded border border-pink-500/20">2021/11/29</span>
-                            <h3 class="text-base font-bold text-white mt-2 mb-1">TikTok 初登場</h3>
-                            <p class="text-xs text-slate-400 leading-relaxed">開始在 TikTok 上發布第一支貼文。</p>
-                        </div>
-                    </div>
-                    <div class="relative pl-6">
-                        <div class="absolute w-4 h-4 bg-pink-500 rounded-full -left-[9px] top-1 border-4 border-[#0f111a] shadow-[0_0_10px_rgba(244,63,94,0.6)]"></div>
-                        <div class="glass-panel p-5">
-                            <span class="text-[9px] text-pink-400 font-black tracking-widest bg-pink-500/10 px-2 py-1 rounded border border-pink-500/20">2024/10/29</span>
-                            <h3 class="text-base font-bold text-white mt-2 mb-1">一萬名粉絲達成</h3>
-                            <p class="text-xs text-slate-400 leading-relaxed">突破 10K 訂閱里程碑。</p>
-                        </div>
-                    </div>
-                    <div class="relative pl-6">
-                        <div class="absolute w-4 h-4 bg-pink-500 rounded-full -left-[9px] top-1 border-4 border-[#0f111a] shadow-[0_0_10px_rgba(244,63,94,0.6)]"></div>
-                        <div class="glass-panel p-5">
-                            <span class="text-[9px] text-pink-400 font-black tracking-widest bg-pink-500/10 px-2 py-1 rounded border border-pink-500/20">2025/03/17</span>
-                            <h3 class="text-base font-bold text-white mt-2 mb-1">十萬名粉絲達成</h3>
-                            <p class="text-xs text-slate-400 leading-relaxed">官方認證十萬麋鹿大軍！</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="page-id" class="page-section">
-                <div class="glass-panel p-6 text-center border-t-2 border-t-pink-500">
-                    <h2 class="text-xl font-bold mb-2 text-white tracking-wide">官方麋鹿認證</h2>
-                    <p class="text-[10px] text-slate-400 mb-6">請選擇照片並輸入暱稱生成</p>
+            <section id="page-quiz" class="page flex-col h-full overflow-y-auto no-scrollbar px-5 pt-8 pb-[100px]">
+                <div id="quiz-intro" class="glass-card p-6 text-center border-t-2 border-t-blue-500 bg-gradient-to-b from-blue-500/5 to-transparent relative overflow-hidden">
+                    <div class="text-5xl mb-4 drop-shadow-lg">🎓</div>
+                    <h2 class="text-lg font-black mb-2 text-white tracking-widest">麋鹿大會考</h2>
+                    <p class="text-slate-400 text-[11px] mb-8 leading-relaxed">隨機抽取 10 題進行測驗<br>結束後系統將配發專屬戰績圖。</p>
                     
-                    <input type="text" id="id-name" maxlength="10" placeholder="請輸入暱稱" class="w-full bg-black/40 border border-slate-700 rounded-lg py-3 px-4 text-white text-center mb-6 focus:outline-none focus:border-pink-500 text-sm">
+                    <div class="text-left mb-2 text-[10px] text-blue-400 font-bold pl-2">挑戰者名稱</div>
+                    <input type="text" id="quiz-player-name" placeholder="輸入你的名字" class="w-full bg-black/60 border border-slate-700 rounded-xl py-4 px-4 text-white text-center mb-6 focus:outline-none focus:border-blue-500 text-sm font-bold">
                     
-                    <div id="avatar-selection-grid" class="grid grid-cols-3 gap-3 mb-6"></div>
-
-                    <button onclick="generateIDCard()" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-3.5 rounded-xl font-bold text-white text-sm shadow-[0_0_15px_rgba(244,63,94,0.4)] hover:opacity-90">
-                        立即生成精美身分卡
-                    </button>
-                </div>
-
-                <canvas id="id-canvas" width="1080" height="1350" style="display:none;"></canvas>
-                <div id="id-result-area" class="hidden mt-6 text-center animate__animated animate__zoomIn">
-                    <p class="text-xs text-green-400 mb-3 font-bold"><i class="fas fa-check-circle"></i> 長按下方圖片即可儲存</p>
-                    <img id="id-result-img" src="" class="w-full rounded-2xl shadow-2xl border border-white/10">
-                </div>
-            </section>
-
-            <section id="page-quiz" class="page-section">
-                <div id="quiz-intro" class="glass-panel p-8 text-center border-t-2 border-t-blue-500">
-                    <div class="text-4xl mb-4">🎓</div>
-                    <h2 class="text-xl font-black mb-2 text-white tracking-widest">麋鹿大會考</h2>
-                    <p class="text-slate-400 text-xs mb-6">隨機抽取 10 題，生成專屬戰績圖！</p>
-                    <input type="text" id="quiz-player-name" placeholder="請輸入挑戰者姓名" class="w-full bg-black/40 border border-slate-700 rounded-lg py-3 px-4 text-white text-center mb-6 focus:outline-none focus:border-blue-500 text-sm">
-                    <button onclick="startQuiz()" class="w-full bg-blue-600 py-3.5 rounded-xl font-bold text-white text-sm shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:bg-blue-500">
-                        開始挑戰
+                    <button onclick="startQuiz()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-white text-sm shadow-[0_0_20px_rgba(37,99,235,0.4)] active:scale-95 transition-transform">
+                        開始測驗
                     </button>
                 </div>
                 
-                <div id="quiz-area" class="hidden">
-                    <div class="flex justify-between items-center mb-4">
-                        <span id="quiz-progress" class="bg-slate-800 text-white text-[10px] font-black tracking-widest px-3 py-1 rounded">Q 1/10</span>
-                        <span id="quiz-score" class="text-pink-400 text-[10px] font-black tracking-widest bg-pink-500/10 px-3 py-1 rounded border border-pink-500/20">SCORE: 0</span>
+                <div id="quiz-area" class="hidden flex-col h-full">
+                    <div class="flex justify-between items-center mb-4 px-1">
+                        <span id="quiz-progress" class="bg-slate-800 text-white text-[10px] font-black tracking-widest px-3 py-1.5 rounded-lg border border-slate-700">題目 1/10</span>
+                        <span id="quiz-score" class="text-pink-400 text-[10px] font-black tracking-widest bg-pink-500/10 px-3 py-1.5 rounded-lg border border-pink-500/20">目前得分: 0</span>
                     </div>
-                    <div class="glass-panel p-6">
-                        <h3 id="quiz-question" class="text-base font-bold mb-6 text-white leading-relaxed">載入中...</h3>
-                        <div id="quiz-options" class="space-y-3"></div>
+                    <div class="glass-card p-5 border-l-4 border-l-blue-500 mb-4">
+                        <h3 id="quiz-question" class="text-sm font-bold text-white leading-relaxed">載入中...</h3>
                     </div>
+                    <div id="quiz-options" class="space-y-3 flex-1"></div>
                 </div>
-
-                <canvas id="quiz-canvas" width="1080" height="1350" style="display:none;"></canvas>
-                <div id="quiz-result-area" class="hidden mt-6 text-center animate__animated animate__zoomIn">
-                    <p class="text-xs text-blue-400 mb-3 font-bold"><i class="fas fa-trophy"></i> 長按下方圖片儲存戰績</p>
-                    <img id="quiz-result-img" src="" class="w-full rounded-2xl shadow-2xl border border-white/10 mb-4">
-                    <button onclick="location.reload()" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-white text-sm">返回首頁</button>
-                </div>
+                <canvas id="quiz-canvas" width="1080" height="1500" style="display:none;"></canvas>
             </section>
 
         </main>
 
-        <nav class="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[360px] nav-capsule rounded-full px-4 py-2 flex justify-between items-center z-50">
-            <button onclick="switchTab('page-home', this)" class="nav-item active flex flex-col items-center w-12 pt-1">
-                <div class="icon-wrapper text-lg"><i class="fas fa-home"></i></div>
+        <nav class="absolute bottom-5 left-1/2 transform -translate-x-1/2 w-[88%] max-w-[360px] bottom-nav rounded-[2rem] px-3 py-2 flex justify-between items-center z-50 shadow-2xl">
+            <button onclick="switchTab('page-home', this)" class="nav-item active flex flex-col items-center w-12 py-1">
+                <div class="icon-box text-[18px]"><i class="fas fa-home"></i></div>
             </button>
-            <button onclick="switchTab('page-ai', this)" class="nav-item flex flex-col items-center w-12 pt-1">
-                <div class="icon-wrapper text-lg"><i class="fas fa-robot"></i></div>
+            <button onclick="switchTab('page-ai', this)" class="nav-item flex flex-col items-center w-12 py-1">
+                <div class="icon-box text-[18px]"><i class="fas fa-robot"></i></div>
             </button>
-            <button onclick="switchTab('page-timeline', this)" class="nav-item flex flex-col items-center w-12 pt-1">
-                <div class="icon-wrapper text-lg"><i class="fas fa-calendar-alt"></i></div>
+            <button onclick="switchTab('page-timeline', this)" class="nav-item flex flex-col items-center w-12 py-1">
+                <div class="icon-box text-[18px]"><i class="fas fa-clock"></i></div>
             </button>
-            <button onclick="switchTab('page-id', this)" class="nav-item flex flex-col items-center w-12 pt-1">
-                <div class="icon-wrapper text-lg"><i class="fas fa-id-badge"></i></div>
+            <button onclick="switchTab('page-id', this)" class="nav-item flex flex-col items-center w-12 py-1">
+                <div class="icon-box text-[18px]"><i class="fas fa-fingerprint"></i></div>
             </button>
-            <button onclick="switchTab('page-quiz', this)" class="nav-item flex flex-col items-center w-12 pt-1">
-                <div class="icon-wrapper text-lg"><i class="fas fa-edit"></i></div>
+            <button onclick="switchTab('page-quiz', this)" class="nav-item flex flex-col items-center w-12 py-1">
+                <div class="icon-box text-[18px]"><i class="fas fa-gamepad"></i></div>
             </button>
         </nav>
 
-        <div id="settings-modal" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-6 opacity-0 transition-opacity duration-300">
-            <div class="bg-[#12141d] w-full rounded-[24px] border border-slate-700 shadow-2xl transform scale-95 transition-transform duration-300" id="settings-content">
+        <div id="settings-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-5 opacity-0 transition-opacity duration-300">
+            <div class="bg-[#121215] w-full rounded-[28px] border border-slate-800 shadow-2xl transform scale-95 transition-transform duration-300" id="settings-content">
                 <div class="flex justify-between items-center p-5 border-b border-white/5">
-                    <h3 class="text-sm font-bold text-white tracking-wide"><i class="fas fa-sliders-h text-pink-500 mr-2"></i> 設定</h3>
-                    <button onclick="toggleSettings()" class="w-7 h-7 bg-white/5 rounded-full flex items-center justify-center text-slate-400 hover:text-white"><i class="fas fa-times text-xs"></i></button>
+                    <h3 class="text-sm font-black text-white tracking-wide"><i class="fas fa-sliders-h text-pink-500 mr-2"></i> 終端設定</h3>
+                    <button onclick="toggleSettings()" class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-white active:bg-white/20"><i class="fas fa-times text-sm"></i></button>
                 </div>
-                <div class="p-5 space-y-5">
-                    <div class="bg-black/30 p-4 rounded-xl border border-white/5">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-slate-300 font-bold text-[11px] tracking-wider">QA 列表顯示數量</span>
-                            <span id="qa-count-display" class="bg-pink-500/20 text-pink-400 text-[10px] font-black px-2 py-0.5 rounded">8 題</span>
+                <div class="p-5 space-y-4">
+                    <div class="bg-black/50 p-4 rounded-2xl border border-white/5">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-slate-300 font-bold text-xs">列表顯示數量</span>
+                            <span id="qa-count-display" class="bg-pink-500 text-white text-[10px] font-black px-2 py-0.5 rounded">8 題</span>
                         </div>
                         <input type="range" id="qa-per-page-slider" min="4" max="20" step="2" value="8" oninput="updateQASetting(this.value)">
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="alert('目前版本: v8.2\n- 導入防跑版 App 容器\n- Canvas 引擎升級，圖片更精美\n- 解決版面空洞問題')" class="flex-1 bg-white/5 text-slate-300 py-3 rounded-lg text-xs font-bold hover:bg-white/10">更新日誌</button>
-                        <button onclick="nukeAndReload()" class="flex-1 bg-red-500/10 text-red-400 py-3 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white">重置緩存</button>
+                    
+                    <div class="bg-black/50 p-4 rounded-2xl border border-white/5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300 text-xs font-bold"><i class="fas fa-font text-blue-400 mr-2"></i> 放大字體</span>
+                            <input type="checkbox" id="font-toggle" class="w-4 h-4 accent-blue-500" onchange="saveSettings()">
+                        </div>
+                        <div class="w-full h-px bg-white/5"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300 text-xs font-bold"><i class="fas fa-music text-purple-400 mr-2"></i> 介面音效</span>
+                            <input type="checkbox" id="sound-toggle" checked class="w-4 h-4 accent-pink-500" onchange="saveSettings()">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <button onclick="clearChatHistory()" class="bg-slate-800 text-slate-300 py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-1 hover:bg-slate-700">
+                            <i class="fas fa-comment-slash"></i> 清空對話
+                        </button>
+                        <button onclick="nukeAndReload()" class="bg-red-500/10 border border-red-500/30 text-red-400 py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-1 hover:bg-red-500 hover:text-white">
+                            <i class="fas fa-power-off"></i> 重啟系統
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
     </div>
-    <script src="ld_qa.js?v=8.2"></script>
-    <script src="ld_quiz.js?v=8.2"></script>
-    <script src="app.js?v=8.2"></script>
+
+    <script src="ld_qa.js?v=11.1"></script>
+    <script src="ld_quiz.js?v=11.1"></script>
+    <script src="app.js?v=11.1"></script>
 </body>
 </html>
