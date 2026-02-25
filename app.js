@@ -1,443 +1,475 @@
-/**
- * 鹿 QA 核心邏輯 - app.js (v5.2 Sound & Events)
- */
+/* ==========================================================================
+   鹿🦌 QA 粉絲站 v8.0 - 終極核心邏輯 (app.js)
+   依賴：ld_qa.js, ld_quiz.js
+   ========================================================================== */
 
-// 輕量級點擊音效 (Base64 編碼，無需額外檔案)
-const CLICK_SOUND_SRC = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAEA//8BAAAAAAEA//8="; // 極短的空音效，實際運作建議用下方更有感的
-const POP_SOUND_SRC = "data:audio/mp3;base64,SUQzBAAAAAABAFRYWFgAAAASAAADbWFqb3JfYnJhbmQAbXA0MgBUWFhYAAAAEQAAA21pbm9yX3ZlcnNpb24AMABUWFhYAAAAHAAAA2NvbXBhdGlibGVfYnJhbmRzAGlzb21tcDQyAFRTU0UAAAAPAAADTGF2ZjU3LjgzLjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAZAAABqwA0ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888//uQZAAABHp5UAAAAAAJHJSAAAAAAEZkY8AAACAmclQAAAAAD/8z+CgAAAM888888888888888888888888888888888888888888888888888888888888888888888888"; // 這是一個很短的「啵」聲
+const qaData = window.QA_DB || [];
+const quizData = window.QUIZ_DB || [];
 
-const THEMES = [
-    { name: 'pink', color: '#ec4899', light: '#fce7f3' },
-    { name: 'blue', color: '#3b82f6', light: '#dbeafe' },
-    { name: 'purple', color: '#8b5cf6', light: '#ede9fe' },
-    { name: 'orange', color: '#f97316', light: '#ffedd5' },
-    { name: 'green', color: '#10b981', light: '#d1fae5' }
-];
+// 系統設定狀態管理
+let appSettings = {
+    qaPerPage: 8,
+    soundOn: true,
+    powerSave: false
+};
 
-function deerApp() {
-    return {
-        // 資料源
-        allData: window.DEER_QA || [],
-        allQuizData: window.DEER_QUIZ || [],
-        
-        // 搜尋與分頁
-        search: '',
-        currentPage: 1, 
-        itemsPerPage: 30,
-        
-        // UI 狀態
-        currentTab: 'home',
-        isDark: false,
-        flippedCards: [],
-        showToast: false,
-        toastMessage: '',
-        scrollY: 0,
-        installPrompt: null,
-        
-        // 音效設定
-        isMuted: false, // 預設開啟音效
-        audioElement: null,
-
-        // 主題與背景
-        themes: THEMES,
-        currentTheme: THEMES[0],
-        backgrounds: ['./images/backgrounds/bg1.jpg', './images/backgrounds/bg2.jpg', './images/backgrounds/bg3.jpg'],
-        
-        // 身分證變數
-        idCardName: '', selectedBg: './images/backgrounds/bg1.jpg', generatedIdNumber: '',
-        
-        // 分享與截圖
-        showShareModal: false, 
-        randomShareBg: '',
-        
-        // 系統狀態
-        appVersion: '5.2.0',
-        showUpdateModal: false,
-        showTutorial: false,
-        tutorialStep: 0,
-        tutorialSteps: [
-            { title: "語音對話", desc: "現在按一下麥克風，就可以直接用講的問 AI 喔！" },
-            { title: "紀念日追蹤", desc: "首頁新增了重要時刻，一起倒數鹿🦌的生日！" },
-            { title: "互動音效", desc: "點擊按鈕會有可愛的音效，也可以在右上角靜音。" }
-        ],
-        
-        fanXP: 0,
-        
-        // AI 聊天變數
-        chatInput: '', chatHistory: [], isTyping: false, aiStatus: 'offline', aiStatusText: 'Offline', wakeUpCount: 0, aiBackground: '',
-        isListening: false, 
-        
-        // 測驗變數
-        quizStarted: false, quizEnded: false, 
-        quizTakerName: '', 
-        currentQuizSet: [], 
-        currentQuizIndex: 0, 
-        quizScore: 0, 
-        hasAnswered: false, 
-        selectedOption: null,
-        examDate: '',
-
-        initApp() {
-            // 初始化音效
-            this.audioElement = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'); // 使用簡單的 Pop 音效連結
-            this.audioElement.volume = 0.5;
-
-            // 讀取設定
-            const savedTheme = localStorage.getItem('deer_theme');
-            if (savedTheme) this.currentTheme = JSON.parse(savedTheme);
-
-            const savedXP = localStorage.getItem('deer_xp');
-            if (savedXP) this.fanXP = parseInt(savedXP);
-
-            const savedMute = localStorage.getItem('deer_muted');
-            if (savedMute !== null) this.isMuted = savedMute === 'true';
-            
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) this.toggleDarkMode();
-            
-            window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.installPrompt = e; });
-            
-            this.aiBackground = this.backgrounds[0];
-            this.updateAIStatusText();
-            this.addXP(10);
-
-            const storedVersion = localStorage.getItem('deer_app_version');
-            if (storedVersion !== this.appVersion) {
-                this.showUpdateModal = true;
-            } else if (!localStorage.getItem('deer_tutorial_done')) {
-                setTimeout(() => this.startTutorial(), 500);
-            }
-
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', () => {
-                    document.body.style.height = window.visualViewport.height + 'px';
-                });
-            }
-        },
-
-        // --- 🔊 音效控制 ---
-        toggleMute() {
-            this.isMuted = !this.isMuted;
-            localStorage.setItem('deer_muted', this.isMuted);
-            if (!this.isMuted) this.playSound(); // 測試聲音
-        },
-        playSound() {
-            if (this.isMuted || !this.audioElement) return;
-            // 重置音效以便快速連點
-            this.audioElement.currentTime = 0;
-            this.audioElement.play().catch(e => console.log('Audio play blocked'));
-        },
-
-        // --- 📅 日期與紀念日邏輯 ---
-        get dateInfo() {
-            const today = new Date();
-            const currentYear = today.getFullYear();
-            
-            // 1. 生日邏輯 (10/03)
-            const birthday = new Date(currentYear, 9, 3); // 月份從0開始，9是10月
-            if (today > birthday) birthday.setFullYear(currentYear + 1); // 如果今年過了，算明年
-            const diffBirthday = Math.ceil((birthday - today) / (1000 * 60 * 60 * 24));
-            
-            // 2. TikTok 出道日 (2024/8/7)
-            const tiktokStart = new Date(2024, 7, 7);
-            const daysTikTok = Math.floor((today - tiktokStart) / (1000 * 60 * 60 * 24));
-
-            // 3. Instagram 出道日 (2024/6/2)
-            const igStart = new Date(2024, 5, 2);
-            const daysIG = Math.floor((today - igStart) / (1000 * 60 * 60 * 24));
-
-            return {
-                birthdayDiff: diffBirthday,
-                isBirthdayClose: diffBirthday <= 60, // 60天內才顯示倒數
-                daysTikTok,
-                daysIG
-            };
-        },
-
-        // --- 核心：智慧搜尋 ---
-        smartSearch(query) {
-            if (!query) return [];
-            let rawQuery = query.toLowerCase();
-            let cleanQuery = rawQuery
-                .replace(/[.,?!。，？！、]/g, '')
-                .replace(/啊|喔|哦|耶|吧|呢|嗎|嘛|哈|啦|欸|誒|阿|呀/g, '')
-                .replace(/請問|想問|有沒有|知道|覺得|各位|大家|幫我/g, '');
-
-            let normalizedQuery = cleanQuery
-                .replace(/主播|妳|你|她|老婆|姐姐|鹿鹿|主包|鹿比醬|鹿🦌/g, '鹿') 
-                .replace(/男朋友|男友/g, '男朋友');
-
-            if (!normalizedQuery.trim()) return [];
-
-            if (typeof Fuse !== 'undefined') {
-                const fuse = new Fuse(this.allData, {
-                    keys: [{ name: 'tags', weight: 0.6 }, { name: 'q', weight: 0.3 }, { name: 'a', weight: 0.1 }],
-                    includeScore: true, threshold: 0.5, ignoreLocation: true, useExtendedSearch: true
-                });
-                return fuse.search(normalizedQuery).map(res => ({ ...res.item, score: 1 }));
-            } else {
-                return []; 
-            }
-        },
-
-        get filteredQuestions() { 
-            if (this.search.trim() === '') return this.allData; 
-            return this.smartSearch(this.search);
-        },
-        
-        get paginatedData() { const start = (this.currentPage - 1) * this.itemsPerPage; return this.filteredQuestions.slice(start, start + this.itemsPerPage); },
-        get totalPages() { return Math.ceil(this.filteredQuestions.length / this.itemsPerPage); },
-        nextPage() { 
-            this.playSound();
-            if (this.currentPage < this.totalPages) this.currentPage++; 
-            window.scrollTo(0,0); 
-        },
-        prevPage() { 
-            this.playSound();
-            if (this.currentPage > 1) this.currentPage--; 
-            window.scrollTo(0,0); 
-        },
-
-        // --- UI 操作 ---
-        closeUpdateModal() {
-            this.playSound();
-            this.showUpdateModal = false;
-            localStorage.setItem('deer_app_version', this.appVersion);
-            if (!localStorage.getItem('deer_tutorial_done')) setTimeout(() => this.startTutorial(), 500);
-        },
-        startTutorial() { this.showTutorial = true; this.tutorialStep = 1; window.scrollTo(0, 0); this.changeTab('home'); },
-        nextTutorialStep() {
-            this.playSound();
-            if (this.tutorialStep < this.tutorialSteps.length) {
-                this.tutorialStep++;
-                if (this.tutorialStep === 3) this.changeTab('ai');
-                else this.changeTab('home');
-            } else { this.endTutorial(); }
-        },
-        endTutorial() { this.playSound(); this.showTutorial = false; this.tutorialStep = 0; this.changeTab('home'); localStorage.setItem('deer_tutorial_done', 'true'); },
-        setTheme(t) { this.playSound(); this.currentTheme = t; localStorage.setItem('deer_theme', JSON.stringify(t)); },
-        handleScroll() { this.scrollY = window.scrollY; },
-        
-        calculateLevel(xp) { return Math.floor(xp / 100); },
-        addXP(amount) { this.fanXP += amount; localStorage.setItem('deer_xp', this.fanXP); },
-        get currentLevelInfo() {
-            const level = this.calculateLevel(this.fanXP);
-            let title = "路人粉 🌱"; let next = 500;
-            if (this.fanXP >= 5000) { title = "傳說鹿神 👑"; next = "MAX"; }
-            else if (this.fanXP >= 2000) { title = "骨灰級鐵粉 🔥"; next = 5000; }
-            else if (this.fanXP >= 1000) { title = "資深鹿迷 💖"; next = 2000; }
-            else if (this.fanXP >= 500) { title = "實習麋鹿 🦌"; next = 1000; }
-            return { title, next };
-        },
-        get xpPercentage() { return (this.fanXP % 100); },
-
-        // --- AI & 語音功能 ---
-        updateAIStatusText() {
-            if (this.aiStatus === 'offline') {
-                const statusTexts = ['呼呼大睡中... 😴', '正在跟哺嚕玩🐱', '正在打傳說 🎮'];
-                this.aiStatusText = statusTexts[Math.floor(Math.random() * statusTexts.length)];
-            } else { this.aiStatusText = 'Online'; }
-        },
-        wakeUpAI() { 
-            this.playSound();
-            if (this.aiStatus === 'online') return; 
-            this.wakeUpCount++; 
-            if (this.wakeUpCount >= 5) { 
-                this.aiStatus = 'online'; 
-                this.addBotMessage("哈囉！我是 AI 麋鹿，你可以打字或用語音問我問題喔！🎤"); 
-                this.wakeUpCount = 0; 
-                confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 } }); 
-            } 
-        },
-        startVoiceInput() {
-            this.playSound();
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                this.showNotification("您的瀏覽器不支援語音輸入 😢");
-                return;
-            }
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'zh-TW'; 
-            recognition.interimResults = false;
-            recognition.onstart = () => { this.isListening = true; this.showNotification("正在聆聽中... 👂"); };
-            recognition.onend = () => { this.isListening = false; };
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                this.chatInput = transcript;
-                this.sendMessage(); 
-            };
-            recognition.start();
-        },
-        sendMessage() { 
-            if(!this.chatInput) return; 
-            this.playSound();
-            const userText = this.chatInput;
-            this.chatHistory.push({id: Date.now(), text: userText, isUser: true}); 
-            this.chatInput = ''; this.isTyping = true; 
-            this.addXP(5);
-
-            setTimeout(() => { 
-                this.isTyping = false; 
-                let response = "";
-                const lower = userText.toLowerCase();
-                if (['hi', 'hello', '你好', '嗨', '安安'].some(w => lower.includes(w))) {
-                    response = "哈囉！我是 AI 麋鹿，關於鹿的事情我都略懂略懂 😎";
-                } else {
-                    const results = this.smartSearch(userText);
-                    if (results.length > 0) {
-                        const prefixes = ["這題我知道！✨", "根據資料顯示... 📚", "幫你查到了！💡", "嗯... 是這樣的："];
-                        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-                        response = `${prefix}\n${results[0].a}`;
-                    } else {
-                        response = "這題超綱了！我去翻翻筆記... 🤔 (您可以試著換個問法)";
-                    }
-                }
-                this.addBotMessage(response);
-            }, 800); 
-        },
-        addBotMessage(text) { 
-            this.chatHistory.push({ id: Date.now(), text: text, isUser: false }); 
-            this.$nextTick(() => { document.getElementById('chatContainer').scrollTop = 99999; }); 
-        },
-
-        // --- 圖片生成 ---
-        generateImageFromTemplate(templateId) {
-            this.playSound();
-            this.showShareModal = true;
-            const container = document.getElementById('shareResultContainer');
-            container.innerHTML = '<div class="flex flex-col items-center justify-center h-64"><div class="w-8 h-8 border-4 border-theme border-t-transparent rounded-full animate-spin mb-4"></div><div class="text-gray-400 font-bold animate-pulse">正在沖洗照片... ✨</div></div>';
-            
+/* ================== 1. 系統初始化與自動探測 ================== */
+document.addEventListener('DOMContentLoaded', async () => {
+    loadSettings();
+    
+    // 智慧型自動探測照片數量 (從 avatar-card1.jpg 開始找)
+    document.getElementById('loading-text').innerText = "SCANNING IMAGES...";
+    await detectAvatars();
+    
+    // 關閉啟動畫面
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            splash.style.opacity = '0';
             setTimeout(() => {
-                const el = document.getElementById(templateId);
-                el.style.display = 'flex'; 
-                
-                html2canvas(el, { 
-                    backgroundColor: null, 
-                    useCORS: true, 
-                    scale: 3, 
-                    logging: false,
-                    allowTaint: true
-                }).then(canvas => {
-                    container.innerHTML = '';
-                    const img = new Image();
-                    img.src = canvas.toDataURL("image/png");
-                    img.className = "w-full h-auto rounded-xl shadow-lg object-contain max-h-[70vh]";
-                    img.alt = "長按儲存圖片";
-                    container.appendChild(img);
-                    el.style.display = 'none';
-                    this.addXP(20);
-                }).catch(err => { 
-                    console.error(err);
-                    container.innerHTML = '<div class="text-red-500 text-center p-4 font-bold">圖片生成失敗 😭<br>請稍後再試</div>'; 
-                });
-            }, 500);
-        },
-        generateIDCard() {
-            this.playSound();
-            if (!this.idCardName) { this.showNotification("請輸入暱稱！"); return; }
-            this.generatedIdNumber = 'MOOSE-' + Math.floor(1000 + Math.random() * 9000);
-            this.generateImageFromTemplate('idCardTemplate');
-        },
-        openShareModal(item) {
-            this.playSound();
-            this.randomShareBg = this.backgrounds[Math.floor(Math.random() * this.backgrounds.length)];
-            document.getElementById('shareCardQ').innerText = item.q;
-            document.getElementById('shareCardA').innerText = item.short || item.a;
-            this.generateImageFromTemplate('shareCardTemplate');
-        },
+                splash.style.display = 'none';
+                initQA(); 
+            }, 600);
+        } else {
+            initQA();
+        }
+    }, 800);
+});
 
-        // --- 大會考 2.0 ---
-        startQuizMode() { this.changeTab('quiz'); this.quizStarted = false; this.quizEnded = false; },
-        startQuiz() { 
-            this.playSound();
-            if (!this.quizTakerName || this.quizTakerName.trim() === '') {
-                this.showNotification("請先輸入你的名字！✍️（不一定要本名）");
-                return;
-            }
+// 底部導航切換
+function switchTab(tabId, btn) {
+    if(appSettings.soundOn) playClickSound();
+    document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-            this.quizStarted = true; 
-            this.quizEnded = false; 
-            this.currentQuizIndex = 0; 
-            this.quizScore = 0;
-            
-            if (this.allQuizData.length > 0) {
-                this.currentQuizSet = this.allQuizData.sort(() => 0.5 - Math.random()).slice(0, 10);
-            } else {
-                this.currentQuizSet = this.allData.sort(() => 0.5 - Math.random()).slice(0, 10).map(item => ({
-                    q: item.q, a: item.short || item.a,
-                    options: [item.short || item.a, '不知道', '秘密', '去問AI'].sort(() => 0.5 - Math.random())
-                }));
-            }
-            this.prepareQuestion(); 
-        },
-        prepareQuestion() { 
-            this.hasAnswered = false; 
-            const q = this.currentQuestion;
-            if (!q.options) {
-                this.currentOptions = [q.a, 'AOV', 'Sleep', 'Pink'].sort(() => 0.5 - Math.random());
-            } else {
-                this.currentOptions = [...q.options].sort(() => 0.5 - Math.random());
-            }
-        },
-        get currentQuestion() { return this.currentQuizSet[this.currentQuizIndex]; },
-        checkAnswer(opt) { 
-            this.playSound();
-            this.hasAnswered = true; 
-            this.selectedOption = opt; 
-            if(opt === this.currentQuestion.a) { 
-                this.quizScore++; 
-                this.addXP(10); 
-            } 
-        },
-        nextQuestion() { 
-            this.playSound();
-            if(this.currentQuizIndex < this.currentQuizSet.length - 1) { 
-                this.currentQuizIndex++; 
-                this.prepareQuestion(); 
-            } else { 
-                this.endQuiz();
-            } 
-        },
-        endQuiz() {
-            this.quizEnded = true;
-            if(this.quizScore === this.currentQuizSet.length) this.addXP(100);
-            this.randomShareBg = this.backgrounds[Math.floor(Math.random() * this.backgrounds.length)];
-            this.examDate = new Date().toISOString().split('T')[0];
-            setTimeout(() => {
-                this.generateImageFromTemplate('examPaperTemplate');
-            }, 1000);
-        },
+// 簡單按鍵音效模擬
+function playClickSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+}
 
-        async installPWA() { if (this.installPrompt) { this.installPrompt.prompt(); const { outcome } = await this.installPrompt.userChoice; if (outcome === 'accepted') this.installPrompt = null; } },
-        
-        changeTab(tab) { 
-            this.playSound();
-            this.currentTab = tab; 
-            window.scrollTo(0,0); 
-            if(tab === 'ai') { 
-                this.wakeUpCount = 0; 
-                this.aiBackground = this.backgrounds[Math.floor(Math.random() * this.backgrounds.length)]; 
-                this.updateAIStatusText(); 
-                if (Math.random() < 0.7) this.aiStatus = 'offline'; else this.aiStatus = 'online'; 
-            } 
-        },
-        toggleDarkMode() { 
-            this.playSound();
-            this.isDark = !this.isDark; 
-            document.documentElement.classList.toggle('dark', this.isDark); 
-        },
-        toggleCard(id) { 
-            this.playSound();
-            if (this.flippedCards.includes(id)) this.flippedCards = this.flippedCards.filter(cid => cid !== id); 
-            else this.flippedCards.push(id); 
-        },
-        showNotification(msg) { this.toastMessage = msg; this.showToast = true; setTimeout(() => this.showToast = false, 3000); },
-        tabClass(tab) { const active = "bg-white/90 text-theme shadow-md font-bold scale-105"; const inactive = "text-gray-500 hover:text-gray-900"; return `px-5 py-2 rounded-full text-sm transition-all whitespace-nowrap ${this.currentTab === tab ? active : inactive}`; },
-        getOptionClass(opt) { 
-            if (!this.hasAnswered) return "bg-white/60 dark:bg-gray-800/60 hover:bg-white border-transparent"; 
-            if (opt === this.currentQuestion.a) return "bg-green-100 border-green-500 text-green-800 shadow-[0_0_15px_rgba(34,197,94,0.4)]"; 
-            if (opt === this.selectedOption) return "bg-red-100 border-red-500 text-red-800"; 
-            return "opacity-40"; 
-        },
-        triggerEasterEgg(type) { if (type === 'profile') { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); this.showNotification("🎉 XP +50!"); this.addXP(50); } }
+/* ================== 2. 系統設定與儲存 ================== */
+function toggleSettings() {
+    if(appSettings.soundOn) playClickSound();
+    const modal = document.getElementById('settings-modal');
+    const content = document.getElementById('settings-content');
+    
+    if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        void modal.offsetWidth; 
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+    } else {
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
     }
+}
+
+function loadSettings() {
+    const saved = localStorage.getItem('deerAppSettings');
+    if (saved) {
+        appSettings = JSON.parse(saved);
+        document.getElementById('qa-per-page-slider').value = appSettings.qaPerPage;
+        document.getElementById('qa-count-display').innerText = `${appSettings.qaPerPage} 題`;
+        document.getElementById('sound-toggle').checked = appSettings.soundOn;
+        document.getElementById('power-toggle').checked = appSettings.powerSave;
+        applyPowerSave();
+    }
+}
+
+function saveSettings() {
+    appSettings.soundOn = document.getElementById('sound-toggle').checked;
+    appSettings.powerSave = document.getElementById('power-toggle').checked;
+    localStorage.setItem('deerAppSettings', JSON.stringify(appSettings));
+    applyPowerSave();
+}
+
+function updateQASetting(val) {
+    appSettings.qaPerPage = parseInt(val);
+    document.getElementById('qa-count-display').innerText = `${val} 題`;
+    localStorage.setItem('deerAppSettings', JSON.stringify(appSettings));
+    currentPage = 1;
+    renderQA(1);
+}
+
+function applyPowerSave() {
+    if(appSettings.powerSave) {
+        document.body.classList.remove('animate__animated');
+    }
+}
+
+function resetSettings() {
+    localStorage.removeItem('deerAppSettings');
+    location.reload();
+}
+
+/* ================== 3. 首頁 QA 渲染與搜尋 ================== */
+let currentPage = 1;
+let filteredQA = [...qaData];
+
+function initQA() {
+    if (qaData.length > 0) renderQA(1);
+    else document.getElementById('qa-list').innerHTML = '<p class="text-red-400 font-bold p-4">無法載入資料庫，請檢查 ld_qa.js 是否正確引入！</p>';
+}
+
+window.filterQA = function() {
+    const term = document.getElementById('qa-search').value.toLowerCase();
+    if (!term) {
+        filteredQA = [...qaData];
+    } else {
+        filteredQA = qaData.filter(item => item.q.toLowerCase().includes(term) || item.a.toLowerCase().includes(term));
+    }
+    currentPage = 1;
+    renderQA(currentPage);
+};
+
+function renderQA(page) {
+    const list = document.getElementById('qa-list');
+    const controls = document.getElementById('pagination-controls');
+    list.innerHTML = '';
+    
+    if (filteredQA.length === 0) {
+        list.innerHTML = '<div class="col-span-full text-center text-slate-500 py-16 font-bold text-lg"><i class="fas fa-box-open mb-2 text-3xl"></i><br>找不到相關問題</div>';
+        controls.innerHTML = '';
+        return;
+    }
+
+    const totalPages = Math.ceil(filteredQA.length / appSettings.qaPerPage);
+    const start = (page - 1) * appSettings.qaPerPage;
+    const currentItems = filteredQA.slice(start, start + appSettings.qaPerPage);
+
+    currentItems.forEach((item, index) => {
+        const num = String(start + index + 1).padStart(2, '0');
+        list.innerHTML += `
+            <div class="glass-panel hover-glass p-6 md:p-8 flex flex-col justify-between min-h-[180px] cursor-pointer group" onclick="if(appSettings.soundOn) playClickSound(); Swal.fire({title:'解答', text:'${item.a}', background:'#1e2030', color:'#fff', confirmButtonColor:'#ec4899', customClass:{title:'text-pink-400'}})">
+                <div class="flex justify-between items-start mb-4">
+                   <div class="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-lg shadow-[0_5px_15px_rgba(236,72,153,0.4)]">Q</div>
+                   <div class="px-3 py-1 rounded-full bg-slate-800 border border-slate-600 text-slate-400 text-xs font-black tracking-widest">#${num}</div>
+                </div>
+                <h3 class="text-[17px] font-bold text-white mb-4 line-clamp-2 leading-relaxed">${item.q}</h3>
+                <div class="text-right mt-auto transition-transform group-hover:translate-x-1">
+                   <span class="text-xs font-bold text-slate-500 tracking-widest">點擊翻看答案 <i class="fas fa-sync-alt ml-1"></i></span>
+                </div>
+            </div>
+        `;
+    });
+
+    controls.innerHTML = `
+        <button onclick="changePage(-1)" class="w-10 h-10 flex items-center justify-center bg-slate-800 text-white rounded-full hover:bg-pink-500 transition disabled:opacity-30 disabled:hover:bg-slate-800 shadow-lg" ${page === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>
+        <span class="text-slate-300 font-black text-xs tracking-[0.2em] bg-slate-800/50 px-4 py-2 rounded-full">PAGE ${page} / ${totalPages}</span>
+        <button onclick="changePage(1)" class="w-10 h-10 flex items-center justify-center bg-slate-800 text-white rounded-full hover:bg-pink-500 transition disabled:opacity-30 disabled:hover:bg-slate-800 shadow-lg" ${page === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>
+    `;
+}
+
+window.changePage = function(delta) {
+    if(appSettings.soundOn) playClickSound();
+    currentPage += delta;
+    renderQA(currentPage);
+    document.getElementById('page-home').scrollIntoView({ behavior: 'smooth' });
+};
+
+/* ================== 4. AI 麋鹿 ================== */
+window.handleAIKeyPress = function(e) { if (e.key === 'Enter') sendAIMessage(); };
+
+window.sendAIMessage = function() {
+    if(appSettings.soundOn) playClickSound();
+    const inputEl = document.getElementById('ai-input');
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    const chat = document.getElementById('chat-window');
+    chat.innerHTML += `
+        <div class="max-w-[85%] md:max-w-[70%] glass-panel p-4 shadow-lg text-[15px] leading-relaxed border border-pink-500/30 bg-[#341a2f] ml-auto text-right mb-4">
+            ${text}
+        </div>`;
+    inputEl.value = '';
+    chat.scrollTop = chat.scrollHeight;
+
+    const bestMatch = findBestMatch(text);
+    
+    setTimeout(() => {
+        let reply = "";
+        if (bestMatch.score > 0.15) { 
+            reply = `根據我的搜尋：<br><b class="text-pink-400 mt-2 block text-lg">${bestMatch.item.a}</b>`;
+        } else {
+            const fallbacks = ["這個問題超出了我的資料庫範圍喔！下次直播問鹿吧🦌", "咦？這個我還沒學習到呢。", "這題太難了啦！(咬草) 🍃"];
+            reply = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        }
+        chat.innerHTML += `
+            <div class="max-w-[85%] md:max-w-[70%] glass-panel p-5 shadow-lg text-[15px] leading-relaxed border border-slate-700/50 bg-[#24273c] animate__animated animate__fadeInUp mb-4">
+                ${reply}
+            </div>`;
+        chat.scrollTop = chat.scrollHeight;
+        if(appSettings.soundOn) playClickSound();
+    }, 600 + Math.random() * 500); 
+};
+
+function findBestMatch(userInput) {
+    let best = { item: null, score: 0 };
+    const nGrams = (str) => {
+        const grams = [];
+        if (str.length === 1) return [str];
+        for (let i = 0; i < str.length - 1; i++) grams.push(str.substring(i, i + 2));
+        return grams;
+    };
+    const inputGrams = nGrams(userInput.toLowerCase());
+
+    qaData.forEach(row => {
+        const targetGrams = nGrams(row.q.toLowerCase() + " " + row.a.toLowerCase());
+        let matches = 0;
+        inputGrams.forEach(ig => { if (targetGrams.includes(ig)) matches++; });
+        const score = matches / Math.max(inputGrams.length, 1);
+        if (score > best.score) best = { item: row, score: score };
+    });
+    return best;
+}
+
+/* ================== 5. 照片自動探測與認證卡渲染 ================== */
+let detectedAvatars = [];
+let selectedAvatarId = 0;
+
+// 自動探測照片演算法
+async function detectAvatars() {
+    const maxScan = 15; // 最多掃描到 avatar-card15.jpg
+    const grid = document.getElementById('avatar-selection-grid');
+    
+    for (let i = 1; i <= maxScan; i++) {
+        let url = `avatar-card${i}.jpg`;
+        let exists = await new Promise((resolve) => {
+            let img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = url;
+        });
+
+        if (exists) {
+            detectedAvatars.push(url);
+        } else {
+            break; // 一旦找不到就停止掃描
+        }
+    }
+
+    // 生成 UI
+    grid.innerHTML = '';
+    if (detectedAvatars.length === 0) {
+        grid.innerHTML = '<p class="col-span-full text-red-400 text-sm">找不到照片。請將照片命名為 avatar-card1.jpg 放在同一資料夾內。</p>';
+        return;
+    }
+
+    detectedAvatars.forEach((url, index) => {
+        let isSelected = index === 0;
+        grid.innerHTML += `
+            <div class="avatar-option aspect-[3/4] rounded-2xl cursor-pointer border-2 ${isSelected ? 'border-pink-500 scale-105 opacity-100' : 'border-transparent opacity-40 hover:opacity-80'} overflow-hidden relative transition transform" onclick="selectAvatar(this, ${index})">
+                <img src="${url}" class="w-full h-full object-cover pointer-events-none">
+                <div class="icon-check absolute inset-0 bg-black/20 ${isSelected ? 'flex' : 'hidden'} items-center justify-center"><i class="fas fa-check-circle text-white text-4xl drop-shadow-lg"></i></div>
+            </div>
+        `;
+    });
+}
+
+window.selectAvatar = function(el, index) {
+    if(appSettings.soundOn) playClickSound();
+    selectedAvatarId = index;
+    const parent = document.getElementById('avatar-selection-grid');
+    parent.querySelectorAll('.avatar-option').forEach(d => {
+        d.classList.remove('border-pink-500', 'opacity-100', 'scale-105');
+        d.classList.add('border-transparent', 'opacity-40');
+        d.querySelector('.icon-check').classList.add('hidden');
+        d.querySelector('.icon-check').classList.remove('flex');
+    });
+    el.classList.remove('border-transparent', 'opacity-40');
+    el.classList.add('border-pink-500', 'opacity-100', 'scale-105');
+    el.querySelector('.icon-check').classList.remove('hidden');
+    el.querySelector('.icon-check').classList.add('flex');
+};
+
+window.generateIDCard = function() {
+    if(appSettings.soundOn) playClickSound();
+    if(detectedAvatars.length === 0) {
+        Swal.fire('錯誤', '沒有可用照片，無法生成！', 'error');
+        return;
+    }
+
+    const nameInput = document.getElementById('id-name').value.trim() || "神秘麋鹿";
+    const canvas = document.getElementById('id-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 背景
+    const gradient = ctx.createLinearGradient(0, 0, 0, 1000);
+    gradient.addColorStop(0, '#151828'); gradient.addColorStop(1, '#2d1b36'); 
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, 800, 1000);
+
+    // 外框
+    ctx.strokeStyle = 'rgba(236, 72, 153, 0.4)'; ctx.lineWidth = 6; ctx.strokeRect(40, 40, 720, 920);
+
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = detectedAvatars[selectedAvatarId];
+    
+    img.onload = () => {
+        ctx.save();
+        roundedRect(ctx, 100, 100, 600, 560, 40);
+        ctx.clip();
+        ctx.drawImage(img, 100, 100, 600, 560);
+        ctx.restore();
+
+        ctx.textAlign = "center";
+        ctx.fillStyle = '#ec4899'; ctx.font = '900 36px "Segoe UI", sans-serif';
+        ctx.fillText('OFFICIAL DEER FAN', 400, 730);
+        
+        ctx.fillStyle = '#ffffff'; ctx.font = '900 70px "Segoe UI", "PingFang TC", sans-serif';
+        ctx.fillText(nameInput, 400, 830);
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        ctx.fillStyle = '#64748b'; ctx.font = 'bold 24px monospace';
+        ctx.fillText(`ID: ${Date.now().toString().slice(-6)} | DATE: ${dateStr}`, 400, 910);
+
+        document.getElementById('id-result-img').src = canvas.toDataURL('image/png', 1.0);
+        document.getElementById('id-result-area').classList.remove('hidden');
+    };
+};
+
+/* ================== 6. 麋鹿大會考與戰績生成 ================== */
+let currentQuiz = [], currentQIndex = 0, score = 0;
+let quizPlayerName = "";
+
+window.startQuiz = function() {
+    if(appSettings.soundOn) playClickSound();
+    quizPlayerName = document.getElementById('quiz-player-name').value.trim();
+    if(!quizPlayerName) { Swal.fire('提示', '請先輸入名字喔！', 'warning'); return; }
+    if (quizData.length < 10) { Swal.fire('錯誤', '題庫不足 10 題！', 'error'); return; }
+
+    document.getElementById('quiz-intro').classList.add('hidden');
+    document.getElementById('quiz-area').classList.remove('hidden');
+    
+    currentQuiz = [...quizData].sort(() => 0.5 - Math.random()).slice(0, 10);
+    currentQIndex = 0; score = 0;
+    renderQuizQuestion();
+};
+
+function renderQuizQuestion() {
+    if (currentQIndex >= 10) { endQuiz(); return; }
+
+    const qData = currentQuiz[currentQIndex];
+    document.getElementById('quiz-progress').innerText = `QUESTION ${currentQIndex + 1} / 10`;
+    document.getElementById('quiz-score').innerText = `SCORE: ${score}`;
+    document.getElementById('quiz-question').innerText = `Q: ${qData.q}`;
+
+    const optsContainer = document.getElementById('quiz-options');
+    optsContainer.innerHTML = '';
+    
+    [...qData.options].sort(() => 0.5 - Math.random()).forEach(opt => {
+        const isCorrect = (opt === qData.a);
+        optsContainer.innerHTML += `
+            <button onclick="answerQuiz(this, ${isCorrect})" class="w-full text-left bg-[#151828] hover:bg-slate-700 p-5 rounded-2xl border border-slate-600 transition font-medium text-[16px]">
+                ${opt}
+            </button>
+        `;
+    });
+}
+
+window.answerQuiz = function(btn, isCorrect) {
+    if(appSettings.soundOn) playClickSound();
+    const btns = document.getElementById('quiz-options').querySelectorAll('button');
+    btns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+        btn.classList.replace('bg-[#151828]', 'bg-green-600/30');
+        btn.classList.add('border-green-500', 'text-green-400', 'font-black');
+        score += 10;
+    } else {
+        btn.classList.replace('bg-[#151828]', 'bg-red-600/30');
+        btn.classList.add('border-red-500', 'text-red-400', 'font-bold');
+        btns.forEach(b => {
+            if (b.innerText.trim() === currentQuiz[currentQIndex].a) {
+                b.classList.replace('bg-[#151828]', 'bg-green-600/30');
+                b.classList.add('border-green-500', 'text-green-400');
+            }
+        });
+    }
+
+    document.getElementById('quiz-score').innerText = `SCORE: ${score}`;
+    setTimeout(() => { currentQIndex++; renderQuizQuestion(); }, 1200);
+};
+
+function endQuiz() {
+    let title = score >= 90 ? "🏆 鹿的終極守護者" : score >= 60 ? "🌟 鐵桿麋鹿" : "🦌 新手麋鹿";
+    
+    // 生成美美的戰績圖片
+    generateQuizResultImage(title);
+
+    Swal.fire({
+        title: '測驗完成！',
+        html: `<p class="text-slate-300">正在為你生成專屬戰績圖...</p>`,
+        background: '#1e2030', color: '#fff', timer: 1500, showConfirmButton: false,
+        customClass: { popup: 'rounded-3xl border border-slate-600' }
+    }).then(() => {
+        document.getElementById('quiz-area').classList.add('hidden');
+    });
+}
+
+function generateQuizResultImage(title) {
+    const canvas = document.getElementById('quiz-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 背景
+    const gradient = ctx.createLinearGradient(0, 0, 800, 1000);
+    gradient.addColorStop(0, '#1a1b35'); gradient.addColorStop(1, '#0f111a'); 
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, 800, 1000);
+
+    // 裝飾圖形
+    ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+    ctx.beginPath(); ctx.arc(400, 300, 250, 0, Math.PI * 2); ctx.fill();
+
+    // 繪製文字
+    ctx.textAlign = "center";
+    ctx.fillStyle = '#fff'; ctx.font = '900 50px "Segoe UI", sans-serif';
+    ctx.fillText('麋鹿大會考 官方戰績', 400, 150);
+    
+    ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 30px "Segoe UI", sans-serif';
+    ctx.fillText(`挑戰者：${quizPlayerName}`, 400, 220);
+
+    ctx.fillStyle = '#e879f9'; ctx.font = '900 200px "Segoe UI", sans-serif';
+    ctx.fillText(`${score}`, 400, 480);
+    
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 40px "Segoe UI", sans-serif';
+    ctx.fillText(`獲得稱號`, 400, 650);
+    
+    ctx.fillStyle = '#3b82f6'; ctx.font = '900 60px "Segoe UI", sans-serif';
+    ctx.fillText(`${title}`, 400, 740);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    ctx.fillStyle = '#475569'; ctx.font = 'bold 20px monospace';
+    ctx.fillText(`ISSUED: ${dateStr} | 鹿 QA v8.0`, 400, 900);
+
+    document.getElementById('quiz-result-img').src = canvas.toDataURL('image/png', 1.0);
+    document.getElementById('quiz-result-area').classList.remove('hidden');
+}
+
+// Canvas 共用圓角函數
+function roundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath();
 }
