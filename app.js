@@ -178,4 +178,181 @@ let selectedAvatarId = 0;
 async function detectAvatars() {
     const grid = document.getElementById('avatar-selection-grid');
     for (let i = 1; i <= 9; i++) {
-        let
+        let url = `avatar-card${i}.jpg`;
+        let exists = await new Promise(r => { let img = new Image(); img.onload=()=>r(true); img.onerror=()=>r(false); img.src=url; });
+        if (exists) detectedAvatars.push(url); else break; 
+    }
+    grid.innerHTML = '';
+    if (detectedAvatars.length === 0) {
+        grid.innerHTML = '<p class="col-span-3 text-slate-500 text-xs py-2">查無照片，請放置 avatar-card1.jpg</p>'; return;
+    }
+    detectedAvatars.forEach((url, idx) => {
+        grid.innerHTML += `
+            <div class="avatar-option aspect-[3/4] rounded-xl cursor-pointer border-2 ${idx===0 ? 'border-pink-500 opacity-100' : 'border-transparent opacity-40'} overflow-hidden relative transition" onclick="selectAvatar(this, ${idx})">
+                <img src="${url}" class="w-full h-full object-cover pointer-events-none">
+                <div class="icon-check absolute inset-0 bg-black/40 ${idx===0 ? 'flex' : 'hidden'} items-center justify-center"><i class="fas fa-check text-white text-xl"></i></div>
+            </div>`;
+    });
+}
+
+window.selectAvatar = function(el, idx) {
+    selectedAvatarId = idx;
+    document.querySelectorAll('.avatar-option').forEach(d => {
+        d.classList.remove('border-pink-500', 'opacity-100'); d.classList.add('border-transparent', 'opacity-40');
+        d.querySelector('.icon-check').classList.replace('flex','hidden');
+    });
+    el.classList.remove('border-transparent', 'opacity-40'); el.classList.add('border-pink-500', 'opacity-100');
+    el.querySelector('.icon-check').classList.replace('hidden','flex');
+};
+
+/* ================== 6. 頂級精美 Canvas 渲染引擎 ================== */
+
+// 畫圓角矩形工具
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h); ctx.lineTo(x+r, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-r); ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
+}
+
+window.generateIDCard = function() {
+    if(detectedAvatars.length === 0) { Swal.fire('錯誤', '沒有找到照片！', 'error'); return; }
+    const nameInput = document.getElementById('id-name').value.trim() || "神秘麋鹿";
+    const canvas = document.getElementById('id-canvas'); const ctx = canvas.getContext('2d');
+    
+    // 1. 深色科技背景
+    ctx.fillStyle = '#0a0a0c'; ctx.fillRect(0, 0, 1080, 1350);
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
+    grad.addColorStop(0, 'rgba(244, 63, 94, 0.15)'); grad.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1350);
+
+    // 2. 裝飾網格與光暈
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 2;
+    for(let i=0; i<1080; i+=60) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,1350); ctx.stroke(); }
+    for(let i=0; i<1350; i+=60) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(1080,i); ctx.stroke(); }
+
+    // 3. 卡片主體與外框 (玻璃透視感)
+    ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 20;
+    ctx.fillStyle = '#121218'; roundRect(ctx, 80, 80, 920, 1190, 60); ctx.fill();
+    ctx.shadowColor = 'transparent'; // 重置陰影
+    ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)'; ctx.lineWidth = 4; roundRect(ctx, 80, 80, 920, 1190, 60); ctx.stroke();
+
+    // 4. 照片處理
+    const img = new Image(); img.crossOrigin = "Anonymous"; img.src = detectedAvatars[selectedAvatarId];
+    img.onload = () => {
+        ctx.save();
+        roundRect(ctx, 140, 140, 800, 750, 40); ctx.clip();
+        ctx.drawImage(img, 140, 140, 800, 750);
+        ctx.restore();
+
+        // 照片內發光邊框
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 6; roundRect(ctx, 140, 140, 800, 750, 40); ctx.stroke();
+
+        // 5. 高質感文字排版
+        ctx.textAlign = "center";
+        
+        // 標題
+        ctx.fillStyle = '#f43f5e'; ctx.font = '900 42px "Segoe UI", sans-serif'; ctx.letterSpacing = "8px";
+        ctx.fillText('OFFICIAL DEER FAN', 540, 1000);
+        
+        // 名字 (帶發光效果)
+        ctx.shadowColor = 'rgba(255,255,255,0.3)'; ctx.shadowBlur = 20;
+        ctx.fillStyle = '#ffffff'; ctx.font = '900 90px "Segoe UI", "PingFang TC", sans-serif'; ctx.letterSpacing = "0px";
+        ctx.fillText(nameInput, 540, 1120);
+        ctx.shadowColor = 'transparent';
+
+        // 底部 ID
+        const dateStr = new Date().toISOString().split('T')[0];
+        ctx.fillStyle = '#64748b'; ctx.font = 'bold 28px monospace';
+        ctx.fillText(`ID: 8${Date.now().toString().slice(-5)} | DATE: ${dateStr}`, 540, 1210);
+
+        document.getElementById('id-result-img').src = canvas.toDataURL('image/jpeg', 0.95);
+        document.getElementById('id-result-area').classList.remove('hidden');
+    };
+};
+
+/* ================== 7. 會考系統 ================== */
+let currentQuiz = [], currentQIndex = 0, score = 0, quizPlayerName = "";
+
+window.startQuiz = function() {
+    quizPlayerName = document.getElementById('quiz-player-name').value.trim();
+    if(!quizPlayerName) { Swal.fire('提示', '請輸入名字！', 'warning'); return; }
+    document.getElementById('quiz-intro').classList.add('hidden'); document.getElementById('quiz-area').classList.remove('hidden');
+    currentQuiz = [...quizData].sort(() => 0.5 - Math.random()).slice(0, 10);
+    currentQIndex = 0; score = 0; renderQuizQuestion();
+};
+
+function renderQuizQuestion() {
+    if (currentQIndex >= 10) { endQuiz(); return; }
+    const qData = currentQuiz[currentQIndex];
+    document.getElementById('quiz-progress').innerText = `Q ${currentQIndex + 1}/10`;
+    document.getElementById('quiz-score').innerText = `SCORE: ${score}`;
+    document.getElementById('quiz-question').innerText = `Q: ${qData.q}`;
+
+    const optsContainer = document.getElementById('quiz-options'); optsContainer.innerHTML = '';
+    [...qData.options].sort(() => 0.5 - Math.random()).forEach(opt => {
+        const isCorrect = (opt === qData.a);
+        optsContainer.innerHTML += `<button onclick="answerQuiz(this, ${isCorrect})" class="w-full text-left bg-white/5 hover:bg-white/10 p-4 rounded-xl border border-white/10 transition font-bold text-sm text-white">${opt}</button>`;
+    });
+}
+
+window.answerQuiz = function(btn, isCorrect) {
+    document.getElementById('quiz-options').querySelectorAll('button').forEach(b => b.disabled = true);
+    if (isCorrect) {
+        btn.className = "w-full text-left bg-green-600/30 border border-green-500 text-green-400 p-4 rounded-xl font-black text-sm"; score += 10;
+    } else {
+        btn.className = "w-full text-left bg-red-600/30 border border-red-500 text-red-400 p-4 rounded-xl font-bold text-sm";
+        document.getElementById('quiz-options').querySelectorAll('button').forEach(b => {
+            if (b.innerText.trim() === currentQuiz[currentQIndex].a) b.className = "w-full text-left bg-green-600/30 border border-green-500 text-green-400 p-4 rounded-xl font-bold text-sm";
+        });
+    }
+    document.getElementById('quiz-score').innerText = `SCORE: ${score}`;
+    setTimeout(() => { currentQIndex++; renderQuizQuestion(); }, 1000);
+};
+
+function endQuiz() {
+    let title = score >= 90 ? "鹿的終極守護者" : score >= 60 ? "鐵桿麋鹿" : "新手麋鹿";
+    generateQuizResultImage(title);
+    document.getElementById('quiz-area').classList.add('hidden');
+}
+
+window.generateQuizResultImage = function(title) {
+    const canvas = document.getElementById('quiz-canvas'); const ctx = canvas.getContext('2d');
+    
+    // 深藍電競背景
+    ctx.fillStyle = '#060b19'; ctx.fillRect(0, 0, 1080, 1350);
+    const grad = ctx.createRadialGradient(540, 600, 100, 540, 600, 800);
+    grad.addColorStop(0, 'rgba(59, 130, 246, 0.2)'); grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1350);
+
+    // 外框
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)'; ctx.lineWidth = 8; roundRect(ctx, 50, 50, 980, 1250, 50); ctx.stroke();
+
+    ctx.textAlign = "center";
+    
+    ctx.fillStyle = '#ffffff'; ctx.font = '900 65px "Segoe UI", sans-serif';
+    ctx.fillText('麋鹿大會考 戰績認證', 540, 250);
+    
+    ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 36px "Segoe UI", sans-serif';
+    ctx.fillText(`挑戰者：${quizPlayerName}`, 540, 350);
+
+    // 分數發光特效
+    ctx.shadowColor = 'rgba(236, 72, 153, 0.8)'; ctx.shadowBlur = 50;
+    ctx.fillStyle = '#f43f5e'; ctx.font = '900 350px "Segoe UI", sans-serif';
+    ctx.fillText(`${score}`, 540, 750);
+    ctx.shadowColor = 'transparent';
+    
+    ctx.fillStyle = '#cbd5e1'; ctx.font = 'bold 45px "Segoe UI", sans-serif';
+    ctx.fillText(`最終稱號`, 540, 950);
+    
+    // 稱號金色漸層
+    const textGrad = ctx.createLinearGradient(0, 980, 0, 1080);
+    textGrad.addColorStop(0, '#fbbf24'); textGrad.addColorStop(1, '#f59e0b');
+    ctx.fillStyle = textGrad; ctx.font = '900 85px "Segoe UI", sans-serif';
+    ctx.fillText(`🏆 ${title}`, 540, 1060);
+
+    ctx.fillStyle = '#475569'; ctx.font = 'bold 24px monospace';
+    ctx.fillText(`ISSUED: ${new Date().toISOString().split('T')[0]} | APP v8.2`, 540, 1220);
+
+    document.getElementById('quiz-result-img').src = canvas.toDataURL('image/jpeg', 0.95);
+    document.getElementById('quiz-result-area').classList.remove('hidden');
+};
