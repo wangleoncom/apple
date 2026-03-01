@@ -1004,14 +1004,15 @@ window.generateIDCard = function() {
     };
 };
 
-// === 2. 生日專屬認證卡生成 (防重疊隨機蛋糕版) ===
+// === 2. 生日專屬認證卡生成 (明亮香檳金 + 隨機滿版蛋糕) ===
 window.generateBirthdayIDCard = async function() {
     playClickSound();
     const nameInput = document.getElementById('id-name').value.trim() || "尊榮粉絲";
     
+    // 震撼的過場動畫
     PremiumSwal.fire({ 
         title: '<div class="animate-pulse text-yellow-400"><i class="fa-solid fa-cake-candles"></i></div>',
-        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-sky-400 font-mono tracking-widest">注入專屬能量中...</div>',
+        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-yellow-600 font-mono tracking-widest">注入金光能量中...</div>',
         showConfirmButton: false, 
         allowOutsideClick: false,
         timer: 1500
@@ -1023,51 +1024,48 @@ window.generateBirthdayIDCard = async function() {
         
         ctx.clearRect(0, 0, 1080, 1500);
 
-        ctx.fillStyle = '#030303'; ctx.fillRect(0, 0, 1080, 1500);
+        // 1. 明亮的耀眼金色背景 (取代原本的黑底)
+        ctx.fillStyle = '#fef3c7'; // 非常亮的米黃色基底
+        ctx.fillRect(0, 0, 1080, 1500);
         
-        const gradGold = ctx.createRadialGradient(540, 200, 100, 540, 400, 900);
-        gradGold.addColorStop(0, 'rgba(251, 191, 36, 0.25)');
-        gradGold.addColorStop(1, 'transparent');
-        ctx.fillStyle = gradGold; ctx.fillRect(0, 0, 1080, 1500);
-
-        const gradBlue = ctx.createRadialGradient(540, 1200, 100, 540, 1000, 800);
-        gradBlue.addColorStop(0, 'rgba(56, 189, 248, 0.15)');
-        gradBlue.addColorStop(1, 'transparent');
-        ctx.fillStyle = gradBlue; ctx.fillRect(0, 0, 1080, 1500);
+        const gradGold = ctx.createRadialGradient(540, 750, 100, 540, 750, 1000);
+        gradGold.addColorStop(0, '#fef08a'); // 亮金
+        gradGold.addColorStop(1, '#d97706'); // 邊緣帶點深邃的琥珀金
+        ctx.fillStyle = gradGold; 
+        ctx.fillRect(0, 0, 1080, 1500);
         
-        ctx.fillStyle = '#080808'; 
+        // 2. 卡片主體 (半透明的白底，讓金色透出來，整體非常明亮)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; 
         ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.fill();
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)'; ctx.lineWidth = 4; ctx.stroke();
+        ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 6; ctx.stroke();
         
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)'; ctx.lineWidth = 1;
+        // 內圈裝飾線
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.roundRect(95, 95, 890, 1310, 35); ctx.stroke();
 
-        // === 🍰 防重疊演算法：只產生 25 顆不打架的蛋糕 ===
+        // === 🍰 防重疊演算法：25 顆不打架的蛋糕 ===
         ctx.save();
         ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
-        ctx.globalAlpha = 0.2; // 稍微調高一點點透明度，因為數量變少了
+        ctx.globalAlpha = 0.5; // 在亮背景上透明度調高一點，讓蛋糕明顯
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
         let cakes = [];
-        let numCakes = 25; // 目標數量：25 顆
-        let maxAttempts = 500; // 最多嘗試次數，避免無窮迴圈
+        let numCakes = 25; 
+        let maxAttempts = 500; 
         let attempts = 0;
 
         while (cakes.length < numCakes && attempts < maxAttempts) {
-            let randSize = 40 + Math.random() * 40; // 隨機大小 40px ~ 80px
-            // 讓蛋糕保持在框線內一點
+            let randSize = 40 + Math.random() * 40; 
             let randX = 120 + randSize + Math.random() * (840 - randSize * 2);
             let randY = 120 + randSize + Math.random() * (1260 - randSize * 2);
             let randAngle = Math.random() * Math.PI * 2;
 
             let overlapping = false;
-            // 檢查是否與已經存在的蛋糕重疊
             for (let j = 0; j < cakes.length; j++) {
                 let dx = randX - cakes[j].x;
                 let dy = randY - cakes[j].y;
                 let distance = Math.sqrt(dx * dx + dy * dy);
-                // 碰撞距離 = 兩者半徑相加再多加 15px 的安全距離
                 let minDistance = (randSize + cakes[j].size) / 2 + 15;
                 if (distance < minDistance) {
                     overlapping = true;
@@ -1075,14 +1073,12 @@ window.generateBirthdayIDCard = async function() {
                 }
             }
 
-            // 如果沒有重疊，就加入陣列
             if (!overlapping) {
                 cakes.push({ x: randX, y: randY, size: randSize, angle: randAngle });
             }
             attempts++;
         }
 
-        // 把算好位置的蛋糕畫上去
         for (let i = 0; i < cakes.length; i++) {
             let cake = cakes[i];
             ctx.font = `${cake.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
@@ -1094,9 +1090,9 @@ window.generateBirthdayIDCard = async function() {
         }
         ctx.restore();
 
-        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
+        // 4. 左上角專屬晶片 (深金框)
+        ctx.strokeStyle = '#b45309'; ctx.lineWidth = 3;
         ctx.strokeRect(140, 140, 80, 60);
-        ctx.strokeStyle = '#38bdf8'; 
         ctx.beginPath(); ctx.moveTo(140, 170); ctx.lineTo(120, 170); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(220, 170); ctx.lineTo(240, 170); ctx.stroke();
 
@@ -1105,37 +1101,39 @@ window.generateBirthdayIDCard = async function() {
         avatarImg.src = "avatar-main.jpg";
 
         const finalizeDraw = (usedFallback = false) => {
-            ctx.save();
-            ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-            ctx.beginPath(); ctx.moveTo(0, 800); ctx.lineTo(1080, 200); ctx.lineTo(1080, 400); ctx.lineTo(0, 1000); ctx.fill();
-            ctx.restore();
-
             ctx.textAlign = "center";
             
-            ctx.fillStyle = '#facc15'; ctx.font = '900 40px "PingFang TC", sans-serif'; ctx.letterSpacing = "8px"; 
-            ctx.fillText('生日特別版', 540, 860);
+            // ⭐ 頂部標題改為「專屬粉絲認證卡」(深棕金，對比亮背景)
+            ctx.fillStyle = '#451a03'; 
+            ctx.font = '900 40px "PingFang TC", sans-serif'; ctx.letterSpacing = "15px"; 
+            ctx.fillText('專屬粉絲認證卡', 540, 840);
             
-            ctx.fillStyle = '#FFFFFF'; ctx.font = '900 130px "PingFang TC", sans-serif'; 
-            ctx.shadowColor = 'rgba(251, 191, 36, 0.4)'; ctx.shadowBlur = 20; 
-            ctx.fillText(nameInput, 540, 1020);
-            ctx.shadowBlur = 0;
+            // 名字印製 (極深灰/近黑，帶白色發光陰影凸顯質感)
+            ctx.fillStyle = '#1c1917'; 
+            ctx.font = '900 130px "PingFang TC", sans-serif'; 
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; ctx.shadowBlur = 20; 
+            ctx.fillText(nameInput, 540, 1000);
+            ctx.shadowBlur = 0; // 重置陰影
 
-            ctx.fillStyle = 'rgba(56, 189, 248, 0.3)'; ctx.fillRect(240, 1100, 600, 2);
+            // 分隔線
+            ctx.fillStyle = 'rgba(180, 83, 9, 0.3)'; ctx.fillRect(240, 1080, 600, 2);
 
-            ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px "PingFang TC", sans-serif'; ctx.letterSpacing = "4px"; 
+            // ⭐ 寫上「老王生日限定版」
+            ctx.fillStyle = '#9a3412'; ctx.font = 'bold 32px "PingFang TC", sans-serif'; ctx.letterSpacing = "4px"; 
             ctx.fillText('老王生日限定版', 540, 1150);
             
-            ctx.fillStyle = '#facc15'; ctx.font = 'bold 28px "PingFang TC", sans-serif'; ctx.letterSpacing = "2px"; 
+            // ⭐ 專屬編號 (阿拉伯數字)
+            ctx.fillStyle = '#451a03'; ctx.font = 'bold 28px "PingFang TC", sans-serif'; ctx.letterSpacing = "2px"; 
             ctx.fillText(`專屬編號：${Date.now().toString().slice(-6)}`, 540, 1200);
             
-            ctx.fillStyle = '#444';
+            // 底部裝飾條碼 (深色)
+            ctx.fillStyle = 'rgba(69, 26, 3, 0.7)';
             for(let i=0; i<30; i++) {
                 let w = Math.random() * 8 + 2; ctx.fillRect(300 + i*16, 1250, w, 60);
             }
 
             setTimeout(() => {
-                const warningText = usedFallback ? '<p class="text-xs text-yellow-500 mt-2 border border-yellow-500/30 bg-yellow-500/10 p-2 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i> 尚未放置 avatar-main.jpg，套用預設頭像。</p>' : '';
+                const warningText = usedFallback ? '<p class="text-xs text-yellow-600 mt-2 border border-yellow-500/30 bg-yellow-500/10 p-2 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i> 尚未放置 avatar-main.jpg，套用預設頭像。</p>' : '';
                 PremiumSwal.fire({ 
                     title: '生日金卡核發成功', 
                     html: `<p class="text-sm text-zinc-400 mb-2">專屬生日晶片已寫入，請長按保存圖片，祝老王生日快樂！🎉</p>${warningText}`, 
@@ -1147,13 +1145,15 @@ window.generateBirthdayIDCard = async function() {
         };
 
         avatarImg.onload = () => {
-            ctx.shadowColor = 'rgba(251, 191, 36, 0.6)'; ctx.shadowBlur = 60;
-            ctx.save(); ctx.beginPath(); ctx.arc(540, 480, 260, 0, Math.PI * 2); ctx.clip();
-            ctx.drawImage(avatarImg, 280, 220, 520, 520); ctx.restore();
+            // 頭像光暈 (白金色)
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; ctx.shadowBlur = 40;
+            ctx.save(); ctx.beginPath(); ctx.arc(540, 460, 260, 0, Math.PI * 2); ctx.clip();
+            ctx.drawImage(avatarImg, 280, 200, 520, 520); ctx.restore();
             ctx.shadowBlur = 0;
             
-            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(540, 480, 264, 0, Math.PI * 2); ctx.stroke();
-            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(540, 480, 256, 0, Math.PI * 2); ctx.stroke();
+            // 雙層頭像框：外圈白，內圈深金
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(540, 460, 264, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = '#d97706'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(540, 460, 256, 0, Math.PI * 2); ctx.stroke();
             
             finalizeDraw(false);
         };
@@ -1161,18 +1161,18 @@ window.generateBirthdayIDCard = async function() {
         avatarImg.onerror = () => { 
             const fallbackImg = new Image();
             fallbackImg.crossOrigin = "Anonymous";
-            fallbackImg.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(nameInput[0] || '王') + "&background=111111&color=facc15&size=512";
+            // 預設圖片也改成金色系搭配
+            fallbackImg.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(nameInput[0] || '王') + "&background=fef08a&color=b45309&size=512";
             fallbackImg.onload = () => {
-                ctx.save(); ctx.beginPath(); ctx.arc(540, 480, 260, 0, Math.PI * 2); ctx.clip();
-                ctx.drawImage(fallbackImg, 280, 220, 520, 520); ctx.restore();
-                ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(540, 480, 264, 0, Math.PI * 2); ctx.stroke();
-                ctx.strokeStyle = '#facc15'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(540, 480, 256, 0, Math.PI * 2); ctx.stroke();
+                ctx.save(); ctx.beginPath(); ctx.arc(540, 460, 260, 0, Math.PI * 2); ctx.clip();
+                ctx.drawImage(fallbackImg, 280, 200, 520, 520); ctx.restore();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(540, 460, 264, 0, Math.PI * 2); ctx.stroke();
+                ctx.strokeStyle = '#d97706'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(540, 460, 256, 0, Math.PI * 2); ctx.stroke();
                 finalizeDraw(true);
             };
         };
     }, 1500);
 };
-
 // === 會考系統 ===
 let currentQuiz = [], currentQIndex = 0, score = 0;
 
