@@ -1004,7 +1004,7 @@ window.generateIDCard = function() {
     };
 };
 
-// === 2. 生日專屬認證卡生成 (明亮香檳金 + 隨機滿版蛋糕) ===
+// === 2. 生日專屬認證卡生成 (明亮耀眼金底 + 隨機滿版蛋糕) ===
 window.generateBirthdayIDCard = async function() {
     playClickSound();
     const nameInput = document.getElementById('id-name').value.trim() || "尊榮粉絲";
@@ -1012,7 +1012,7 @@ window.generateBirthdayIDCard = async function() {
     // 震撼的過場動畫
     PremiumSwal.fire({ 
         title: '<div class="animate-pulse text-yellow-400"><i class="fa-solid fa-cake-candles"></i></div>',
-        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-yellow-600 font-mono tracking-widest">注入金光能量中...</div>',
+        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-yellow-500 font-mono tracking-widest">注入耀眼金光能量中...</div>',
         showConfirmButton: false, 
         allowOutsideClick: false,
         timer: 1500
@@ -1024,38 +1024,36 @@ window.generateBirthdayIDCard = async function() {
         
         ctx.clearRect(0, 0, 1080, 1500);
 
-        // 1. 明亮的耀眼金色背景 (取代原本的黑底)
-        ctx.fillStyle = '#fef3c7'; // 非常亮的米黃色基底
+        // 1. 外層背景：完全改成閃耀的金色漸層 (取代原本的黑色)
+        const gradBg = ctx.createLinearGradient(0, 0, 1080, 1500);
+        gradBg.addColorStop(0, '#fef08a');   // 亮黃金
+        gradBg.addColorStop(0.5, '#f59e0b'); // 橙金
+        gradBg.addColorStop(1, '#78350f');   // 邊角帶一點深棕金增加立體感
+        ctx.fillStyle = gradBg;
         ctx.fillRect(0, 0, 1080, 1500);
         
-        const gradGold = ctx.createRadialGradient(540, 750, 100, 540, 750, 1000);
-        gradGold.addColorStop(0, '#fef08a'); // 亮金
-        gradGold.addColorStop(1, '#d97706'); // 邊緣帶點深邃的琥珀金
-        ctx.fillStyle = gradGold; 
-        ctx.fillRect(0, 0, 1080, 1500);
-        
-        // 2. 卡片主體 (半透明的白底，讓金色透出來，整體非常明亮)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; 
+        // 2. 卡片主體：極度明亮的「白金底色」
+        ctx.fillStyle = '#fffbeb'; // 帶有極淡黃色的白 (amber-50)
         ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.fill();
-        ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 6; ctx.stroke();
         
-        // 內圈裝飾線
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 2;
+        // 卡片外框與內裝飾線 (金色系)
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 6; ctx.stroke();
+        ctx.strokeStyle = '#fcd34d'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.roundRect(95, 95, 890, 1310, 35); ctx.stroke();
 
         // === 🍰 防重疊演算法：25 顆不打架的蛋糕 ===
         ctx.save();
         ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
-        ctx.globalAlpha = 0.5; // 在亮背景上透明度調高一點，讓蛋糕明顯
+        ctx.globalAlpha = 0.35; // 透明度調到剛好，不會搶走文字風采
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
         let cakes = [];
         let numCakes = 25; 
-        let maxAttempts = 500; 
         let attempts = 0;
 
-        while (cakes.length < numCakes && attempts < maxAttempts) {
+        // 隨機計算蛋糕位置，避免重疊
+        while (cakes.length < numCakes && attempts < 500) {
             let randSize = 40 + Math.random() * 40; 
             let randX = 120 + randSize + Math.random() * (840 - randSize * 2);
             let randY = 120 + randSize + Math.random() * (1260 - randSize * 2);
@@ -1079,8 +1077,8 @@ window.generateBirthdayIDCard = async function() {
             attempts++;
         }
 
-        for (let i = 0; i < cakes.length; i++) {
-            let cake = cakes[i];
+        // 畫上蛋糕
+        for (let cake of cakes) {
             ctx.font = `${cake.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
             ctx.save();
             ctx.translate(cake.x, cake.y);
@@ -1103,31 +1101,31 @@ window.generateBirthdayIDCard = async function() {
         const finalizeDraw = (usedFallback = false) => {
             ctx.textAlign = "center";
             
-            // ⭐ 頂部標題改為「專屬粉絲認證卡」(深棕金，對比亮背景)
-            ctx.fillStyle = '#451a03'; 
+            // ⭐ 頂部標題「專屬粉絲認證卡」(改為深棕色，在亮底色上才清楚)
+            ctx.fillStyle = '#78350f'; 
             ctx.font = '900 40px "PingFang TC", sans-serif'; ctx.letterSpacing = "15px"; 
             ctx.fillText('專屬粉絲認證卡', 540, 840);
             
-            // 名字印製 (極深灰/近黑，帶白色發光陰影凸顯質感)
+            // 名字印製 (極深灰，帶有淡淡的黃金發光效果)
             ctx.fillStyle = '#1c1917'; 
             ctx.font = '900 130px "PingFang TC", sans-serif'; 
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; ctx.shadowBlur = 20; 
+            ctx.shadowColor = 'rgba(245, 158, 11, 0.6)'; ctx.shadowBlur = 15; 
             ctx.fillText(nameInput, 540, 1000);
             ctx.shadowBlur = 0; // 重置陰影
 
             // 分隔線
             ctx.fillStyle = 'rgba(180, 83, 9, 0.3)'; ctx.fillRect(240, 1080, 600, 2);
 
-            // ⭐ 寫上「老王生日限定版」
-            ctx.fillStyle = '#9a3412'; ctx.font = 'bold 32px "PingFang TC", sans-serif'; ctx.letterSpacing = "4px"; 
+            // ⭐ 標示「老王生日限定版」
+            ctx.fillStyle = '#b45309'; ctx.font = 'bold 32px "PingFang TC", sans-serif'; ctx.letterSpacing = "4px"; 
             ctx.fillText('老王生日限定版', 540, 1150);
             
-            // ⭐ 專屬編號 (阿拉伯數字)
-            ctx.fillStyle = '#451a03'; ctx.font = 'bold 28px "PingFang TC", sans-serif'; ctx.letterSpacing = "2px"; 
+            // ⭐ 專屬編號 (純阿拉伯數字)
+            ctx.fillStyle = '#78350f'; ctx.font = 'bold 28px "PingFang TC", sans-serif'; ctx.letterSpacing = "2px"; 
             ctx.fillText(`專屬編號：${Date.now().toString().slice(-6)}`, 540, 1200);
             
             // 底部裝飾條碼 (深色)
-            ctx.fillStyle = 'rgba(69, 26, 3, 0.7)';
+            ctx.fillStyle = 'rgba(120, 53, 15, 0.6)';
             for(let i=0; i<30; i++) {
                 let w = Math.random() * 8 + 2; ctx.fillRect(300 + i*16, 1250, w, 60);
             }
@@ -1136,7 +1134,7 @@ window.generateBirthdayIDCard = async function() {
                 const warningText = usedFallback ? '<p class="text-xs text-yellow-600 mt-2 border border-yellow-500/30 bg-yellow-500/10 p-2 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i> 尚未放置 avatar-main.jpg，套用預設頭像。</p>' : '';
                 PremiumSwal.fire({ 
                     title: '生日金卡核發成功', 
-                    html: `<p class="text-sm text-zinc-400 mb-2">專屬生日晶片已寫入，請長按保存圖片，祝老王生日快樂！🎉</p>${warningText}`, 
+                    html: `<p class="text-sm text-zinc-400 mb-2">專屬生日金卡已寫入，請長按保存圖片，祝老王生日快樂！🎉</p>${warningText}`, 
                     imageUrl: canvas.toDataURL('image/jpeg', 0.98), imageWidth: '90%',
                     imageClass: 'rounded-2xl shadow-[0_0_40px_rgba(251,191,36,0.3)] border border-[#333]'
                 });
@@ -1145,13 +1143,13 @@ window.generateBirthdayIDCard = async function() {
         };
 
         avatarImg.onload = () => {
-            // 頭像光暈 (白金色)
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; ctx.shadowBlur = 40;
+            // 頭像光暈 (金色)
+            ctx.shadowColor = 'rgba(245, 158, 11, 0.6)'; ctx.shadowBlur = 40;
             ctx.save(); ctx.beginPath(); ctx.arc(540, 460, 260, 0, Math.PI * 2); ctx.clip();
             ctx.drawImage(avatarImg, 280, 200, 520, 520); ctx.restore();
             ctx.shadowBlur = 0;
             
-            // 雙層頭像框：外圈白，內圈深金
+            // 雙層頭像框：外圈純白，內圈深金
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(540, 460, 264, 0, Math.PI * 2); ctx.stroke();
             ctx.strokeStyle = '#d97706'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(540, 460, 256, 0, Math.PI * 2); ctx.stroke();
             
@@ -1161,7 +1159,6 @@ window.generateBirthdayIDCard = async function() {
         avatarImg.onerror = () => { 
             const fallbackImg = new Image();
             fallbackImg.crossOrigin = "Anonymous";
-            // 預設圖片也改成金色系搭配
             fallbackImg.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(nameInput[0] || '王') + "&background=fef08a&color=b45309&size=512";
             fallbackImg.onload = () => {
                 ctx.save(); ctx.beginPath(); ctx.arc(540, 460, 260, 0, Math.PI * 2); ctx.clip();
