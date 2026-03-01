@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Multi-Platform Scanner</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --success: #22c55e;
+            --error: #ef4444;
+            --text: #f1f5f9;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+        }
+        h2 { margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: #94a3b8; }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.2s;
+        }
+        select:focus, input:focus { border-color: var(--primary); }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: #0f172a;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        #result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #00000044;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            min-height: 100px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .model-tag {
+            display: inline-block;
+            background: #334155;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 6px;
+            margin: 4px;
+            font-size: 14px;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .model-tag:hover { background: var(--primary); color: #0f172a; }
+        .status { margin-bottom: 15px; font-weight: bold; }
+        .loading { color: #facc15; }
+        .success { color: var(--success); }
+        .error { color: var(--error); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔍 AI 模型可用性檢測系統</h2>
+    
+    <div class="input-group">
+        <label>選擇平台</label>
+        <select id="platform">
+            <option value="google">Google Gemini</option>
+            <option value="groq">GroqCloud</option>
+            <option value="cohere">Cohere</option>
+            <option value="huggingface">Hugging Face</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="請貼上您的 API Key...">
+    </div>
+
+    <button onclick="scanModels()">開始掃描模型</button>
+
+    <div id="result">
+        <div class="status">等待輸入並掃描...</div>
+    </div>
+</div>
+
+<script>
+    async function scanModels() {
+        const platform = document.getElementById('platform').value;
+        const key = document.getElementById('apiKey').value.trim();
+        const resultBox = document.getElementById('result');
+
+        if (!key) {
+            resultBox.innerHTML = '<div class="status error">❌ 請先輸入 API Key！</div>';
+            return;
+        }
+
+        resultBox.innerHTML = '<div class="status loading">⏳ 正在與遠端伺服器通訊中...</div>';
+
+        try {
+            let models = [];
+            let response;
+
+            switch (platform) {
+                case 'google':
+                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                    const gData = await response.json();
+                    if (!response.ok) throw new Error(gData.error?.message || 'Google API 錯誤');
+                    models = gData.models
+                        .filter(m => m.supportedGenerationMethods.includes("generateContent"))
+                        .map(m => m.name.replace("models/", ""));
+                    break;
+
+                case 'groq':
+                    response = await fetch(`https://api.groq.com/openai/v1/models`, {
+                        headers: { 'Authorization': `Bearer ${key}` }
+                    });
+                    const groqData = await response.json();
+                    if (!response.ok) throw new Error(groqData.error?.message || 'Groq API 錯誤');
+                    models = groqData.data.map(m => m.id);
+                    break;
+
+                case 'cohere':
+                    response = await fetch(`https://api.cohere.com/v1/models`, {
+                        headers: { 'Authorization': `Bearer ${key}` }
+                    });
+                    const cohereData = await response.json();
+                    if (!response.ok) throw new Error(cohereData.message || 'Cohere API 錯誤');
+                    models = cohereData.models.map(m => m.name);
+                    break;
+
+                case 'huggingface':
+                    // 這裡預設抓取當前最熱門的 Text Generation 模型
+                    response = await fetch(`https://huggingface.co/api/models?filter=text-generation&sort=downloads&direction=-1&limit=20`, {
+                        headers: { 'Authorization': `Bearer ${key}` }
+                    });
+                    const hfData = await response.json();
+                    if (!response.ok) throw new Error('Hugging Face 請求失敗');
+                    models = hfData.map(m => m.id);
+                    break;
+            }
+
+            renderModels(models);
+
+        } catch (error) {
+            resultBox.innerHTML = `<div class="status error">❌ 掃描失敗</div><div style="font-size:13px; color:#94a3b8;">原因：${error.message}</div>`;
+        }
+    }
+
+    function renderModels(models) {
+        const resultBox = document.getElementById('result');
+        if (models.length === 0) {
+            resultBox.innerHTML = '<div class="status error">⚠️ 查詢成功但未發現可用對話模型。</div>';
+            return;
+        }
+
+        let html = `<div class="status success">✅ 掃描完成！共發現 ${models.length} 個可用模型：</div>`;
+        html += `<div style="margin-bottom:10px; font-size:12px; color:#94a3b8;">(點擊名稱可直接複製)</div>`;
+        
+        models.forEach(m => {
+            html += `<span class="model-tag" onclick="copyToClipboard('${m}')">${m}</span>`;
+        });
+
+        resultBox.innerHTML = html;
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('已複製模型名稱: ' + text);
+        });
+    }
+</script>
+
+</body>
+</html>

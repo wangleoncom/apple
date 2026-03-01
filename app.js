@@ -835,7 +835,7 @@ window.generateIDCard = function() {
     };
 };
 
-// === 2. 生日專屬認證卡生成 (全中文 + 蛋糕浮水印 SSR 限定版) ===
+// === 2. 生日專屬認證卡生成 (純中文俐落版：淡藍 x 香檳金) ===
 window.generateBirthdayIDCard = async function() {
     playClickSound();
     const nameInput = document.getElementById('id-name').value.trim() || "尊榮粉絲";
@@ -843,7 +843,7 @@ window.generateBirthdayIDCard = async function() {
     // 震撼的過場動畫
     PremiumSwal.fire({ 
         title: '<div class="animate-pulse text-yellow-400"><i class="fa-solid fa-cake-candles"></i></div>',
-        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-sky-400 font-mono tracking-widest">注入 03.01 專屬能量中...</div>',
+        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-sky-400 font-mono tracking-widest">注入三月一日專屬能量中...</div>',
         showConfirmButton: false, 
         allowOutsideClick: false,
         timer: 1500
@@ -878,19 +878,7 @@ window.generateBirthdayIDCard = async function() {
         ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.roundRect(95, 95, 890, 1310, 35); ctx.stroke();
 
-        // === 🍰 新增：生日蛋糕 Emoji 浮水印背景 ===
-        ctx.save();
-        ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
-        ctx.font = '50px Arial';
-        ctx.globalAlpha = 0.04; // 透明度調得很低，呈現高級浮水印質感
-        for(let i = -1; i < 10; i++) {
-            for(let j = -1; j < 15; j++) {
-                // 交錯排版，讓蛋糕佈滿整個背景
-                let offsetX = (j % 2 === 0) ? 0 : 60; 
-                ctx.fillText('🎂', 80 + i * 120 + offsetX, 100 + j * 100);
-            }
-        }
-        ctx.restore();
+        // (已移除滿版蛋糕浮水印，保持畫面純淨)
 
         // 4. 左上角專屬晶片 (淡藍芯 + 金邊)
         ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
@@ -904,7 +892,7 @@ window.generateBirthdayIDCard = async function() {
         avatarImg.src = "avatar-main.jpg";
 
         const finalizeDraw = (usedFallback = false) => {
-            // 繪製卡面雷射反光斜紋 (Holographic effect)
+            // 繪製卡面雷射反光斜紋 (提升卡片材質的立體感)
             ctx.save();
             ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
             ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
@@ -913,9 +901,9 @@ window.generateBirthdayIDCard = async function() {
 
             ctx.textAlign = "center";
             
-            // ⭐ 限定版標題 (全中文)
+            // ⭐ 頂部標題 (純中文)
             ctx.fillStyle = '#facc15'; ctx.font = '900 40px "PingFang TC", sans-serif'; ctx.letterSpacing = "8px"; 
-            ctx.fillText('03.01 生日特別版', 540, 860);
+            ctx.fillText('三月一日 生日特別版', 540, 860);
             
             // 名字印製
             ctx.fillStyle = '#FFFFFF'; ctx.font = '900 130px "PingFang TC", sans-serif'; 
@@ -926,14 +914,15 @@ window.generateBirthdayIDCard = async function() {
             // 分隔線 (淡藍)
             ctx.fillStyle = 'rgba(56, 189, 248, 0.3)'; ctx.fillRect(240, 1100, 600, 2);
 
-            // ⭐ 專屬序號與稀有度 (全中文)
+            // ⭐ 替換為「老王生日限定版」
             ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px "PingFang TC", sans-serif'; ctx.letterSpacing = "4px"; 
-            ctx.fillText(`稀有度：SSR 限定版`, 540, 1150);
+            ctx.fillText('老王生日限定版', 540, 1150);
             
-            ctx.fillStyle = '#facc15'; ctx.font = 'bold 28px monospace'; ctx.letterSpacing = "2px"; 
-            ctx.fillText(`專屬編號：BDAY-${Date.now().toString().slice(-6)}`, 540, 1200);
+            // ⭐ 專屬編號 (純中文)
+            ctx.fillStyle = '#facc15'; ctx.font = 'bold 28px "PingFang TC", sans-serif'; ctx.letterSpacing = "2px"; 
+            ctx.fillText(`專屬編號：三零一-${Date.now().toString().slice(-6)}`, 540, 1200);
             
-            // 條碼生成
+            // 底部裝飾條碼生成
             ctx.fillStyle = '#444';
             for(let i=0; i<30; i++) {
                 let w = Math.random() * 8 + 2; ctx.fillRect(300 + i*16, 1250, w, 60);
@@ -979,3 +968,100 @@ window.generateBirthdayIDCard = async function() {
         };
     }, 1500); // 配合前面的動畫延遲
 };
+
+// === 會考系統 ===
+let currentQuiz = [], currentQIndex = 0, score = 0;
+
+window.startQuiz = function() {
+    playClickSound();
+    const name = document.getElementById('quiz-player-name').value.trim();
+    if(!name) { PremiumSwal.fire({ title: '存取拒絕', text: '請輸入挑戰者大名以啟動測驗協議！', icon: 'warning' }); return; }
+    if (quizData.length < 10) { PremiumSwal.fire({ title: '系統錯誤', text: '題庫數據不足 10 題，無法啟動。', icon: 'error' }); return; }
+
+    const intro = document.getElementById('quiz-intro');
+    const area = document.getElementById('quiz-area');
+    
+    intro.style.opacity = '0';
+    setTimeout(() => {
+        intro.classList.add('hidden'); 
+        area.classList.replace('hidden', 'flex');
+        area.style.animation = 'cinematicReveal 0.6s ease forwards';
+        
+        currentQuiz = [...quizData].sort(() => 0.5 - Math.random()).slice(0, 10);
+        currentQIndex = 0; score = 0; 
+        renderQuizQuestion();
+    }, 300);
+};
+
+function renderQuizQuestion() {
+    if (currentQIndex >= 10) { endQuiz(); return; }
+    const qData = currentQuiz[currentQIndex];
+    document.getElementById('quiz-progress').innerText = `第 ${currentQIndex + 1} 題 / 共 10 題`;
+    document.getElementById('quiz-score').innerText = `目前積分: ${score}`;
+    
+    const qEl = document.getElementById('quiz-question');
+    qEl.style.opacity = '0';
+    setTimeout(() => {
+        qEl.innerText = qData.q;
+        qEl.style.transition = 'opacity 0.4s';
+        qEl.style.opacity = '1';
+    }, 200);
+    
+    const optsContainer = document.getElementById('quiz-options'); 
+    optsContainer.innerHTML = '';
+    
+    [...qData.options].sort(() => 0.5 - Math.random()).forEach((opt, idx) => {
+        const delay = idx * 0.1;
+        optsContainer.innerHTML += `
+            <button onclick="answerQuiz(this, ${opt === qData.a})" class="w-full text-left bg-[#111] border border-[#333] p-5 rounded-2xl hover:border-sky-500 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] font-bold text-zinc-200 transition-all duration-300 text-sm transform hover:-translate-y-1" style="animation: cinematicReveal 0.4s ease backwards; animation-delay: ${delay}s;">
+                <span class="inline-block w-6 text-zinc-500 font-mono">${['A','B','C','D'][idx]}.</span> ${opt}
+            </button>`;
+    });
+}
+
+window.answerQuiz = function(btn, isCorrect) {
+    document.getElementById('quiz-options').querySelectorAll('button').forEach(b => {
+        b.disabled = true; b.classList.add('opacity-50');
+    });
+    btn.classList.remove('opacity-50');
+    
+    if (isCorrect) { 
+        if(appSettings.soundOn) playSuccessSound();
+        btn.className = "w-full text-left bg-green-500/20 border-2 border-green-500 p-5 rounded-2xl text-green-400 font-black text-sm shadow-[0_0_20px_rgba(34,197,94,0.3)] transform scale-105 transition-all"; 
+        score += 10; 
+    } else { 
+        playClickSound();
+        btn.className = "w-full text-left bg-red-500/20 border-2 border-red-500 p-5 rounded-2xl text-red-400 font-black text-sm shadow-[0_0_20px_rgba(239,68,68,0.3)] transform scale-95 transition-all"; 
+    }
+    
+    document.getElementById('quiz-score').innerText = `目前積分: ${score}`;
+    setTimeout(() => { currentQIndex++; renderQuizQuestion(); }, 1200);
+};
+
+function endQuiz() {
+    gainExp(score); 
+    const area = document.getElementById('quiz-area');
+    const intro = document.getElementById('quiz-intro');
+    
+    area.style.opacity = '0';
+    setTimeout(() => {
+        area.classList.replace('flex','hidden'); 
+        intro.classList.remove('hidden');
+        intro.style.opacity = '1';
+        
+        let rank = "";
+        if(score === 100) rank = "🏆 完美滿分神級粉絲";
+        else if(score >= 80) rank = "🥇 核心護衛隊";
+        else if(score >= 60) rank = "🥈 合格粉絲";
+        else rank = "🥉 假粉警報！需要多補課了";
+
+        PremiumSwal.fire({ 
+            title: '測驗評估完成', 
+            html: `
+                <div class="text-6xl my-4 drop-shadow-[0_0_20px_rgba(56,189,248,0.6)] font-black text-transparent bg-clip-text bg-gradient-to-br from-sky-300 to-sky-600">${score}</div>
+                <div class="text-lg font-bold text-white mb-2">${rank}</div>
+                <p class="text-zinc-400 text-sm border-t border-[#333] pt-3 mt-3">已根據表現發放 ${score} EXP，前往主頁查看等級吧！</p>
+            `
+        });
+    }, 500);
+}
