@@ -15,17 +15,17 @@
     <meta name="keywords" content="老王, 秘密基地, TikTok, 直播, 粉絲認證, 生日">
 
     <meta property="og:title" content="老王專屬秘密基地 - 生日限定版">
-    <meta property="og:description" content="挑戰鐵粉測驗，領取專屬生日認證金卡！">
+    <meta property="og:description" content="挑戰鐵粉測驗，領取專屬生日認證藍卡！">
     <meta property="og:image" content="avatar-main.jpg">
     <meta property="og:url" content="https://wangleoncom.github.io/_z_.csn/">
 
     <style>
-        /* ================= 頂級液態毛玻璃 (香檳金生日版) ================= */
+        /* ================= 頂級液態毛玻璃 (冰晶淡藍生日版) ================= */
         :root {
-            --bg-deep: #030303;
-            --liquid-primary: #facc15;   /* 香檳金 (yellow-400) */
-            --liquid-secondary: #eab308; /* 深金黃 (yellow-500) */
-            --glass-bg: rgba(18, 18, 18, 0.5); 
+            --bg-deep: #040f16; /* 極深的天青色底 */
+            --liquid-primary: #38bdf8;   /* 淡藍色 (sky-400) */
+            --liquid-secondary: #7dd3fc; /* 更清透的淡藍 (sky-300) */
+            --glass-bg: rgba(10, 18, 28, 0.6); 
             --glass-border: rgba(255, 255, 255, 0.08);
             --glass-edge-top: rgba(255, 255, 255, 0.25);
             --glass-edge-left: rgba(255, 255, 255, 0.12);
@@ -33,7 +33,7 @@
 
         html, body {
             background-color: var(--bg-deep) !important;
-            color: #f4f4f5;
+            color: #f8fafc;
             font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
             margin: 0; min-height: 100dvh; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
         }
@@ -57,8 +57,8 @@
         }
         
         .orb-1 { width: 55vw; height: 55vw; top: -10%; left: -10%; filter: blur(60px); }
-        .orb-2 { width: 65vw; height: 65vw; bottom: -15%; right: -10%; background: linear-gradient(135deg, #ca8a04, #facc15); filter: blur(80px); animation-delay: -5s; animation-direction: alternate-reverse; }
-        .orb-3 { width: 45vw; height: 45vw; top: 30%; left: 25%; background: radial-gradient(circle, rgba(250,204,21,0.5), transparent); filter: blur(70px); animation-duration: 25s; }
+        .orb-2 { width: 65vw; height: 65vw; bottom: -15%; right: -10%; background: linear-gradient(135deg, #0284c7, #38bdf8); filter: blur(80px); animation-delay: -5s; animation-direction: alternate-reverse; }
+        .orb-3 { width: 45vw; height: 45vw; top: 30%; left: 25%; background: radial-gradient(circle, rgba(56,189,248,0.5), transparent); filter: blur(70px); animation-duration: 25s; }
 
         @keyframes fluidDrift {
             0% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
@@ -89,8 +89,8 @@
 
         .premium-card:hover {
             transform: translate3d(0, -6px, 0);
-            border-color: rgba(250, 204, 21, 0.3);
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), 0 0 20px -10px rgba(250, 204, 21, 0.2);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), 0 0 25px -10px rgba(56, 189, 248, 0.3);
         }
         .premium-card:hover::before { left: 150%; }
 
@@ -106,13 +106,13 @@
         }
         .glass-element:hover {
             background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(250, 204, 21, 0.4);
+            border-color: rgba(56, 189, 248, 0.5);
             transform: translateY(-2px);
         }
 
         /* --- 4. 底部導航懸浮膠囊 --- */
         .nav-dock {
-            background: rgba(12, 12, 12, 0.75);
+            background: rgba(10, 15, 25, 0.85);
             backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%);
             border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 100px; padding: 10px 16px;
@@ -121,7 +121,7 @@
         }
         .nav-item { color: rgba(255,255,255,0.4); transition: color 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); position: relative; }
         .nav-item:hover { color: rgba(255,255,255,0.9); }
-        .nav-item.active { color: var(--liquid-primary); transform: translateY(-6px) scale(1.1); filter: drop-shadow(0 0 8px rgba(250,204,21,0.5)); }
+        .nav-item.active { color: var(--liquid-primary); transform: translateY(-6px) scale(1.1); filter: drop-shadow(0 0 8px rgba(56,189,248,0.6)); }
         .nav-item.active::after {
             content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
             width: 5px; height: 5px; background: var(--liquid-primary); border-radius: 50%;
@@ -137,8 +137,8 @@
             100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } 
         }
 
-        /* 改為生日香檳金漸層 */
-        .text-gradient-gold { background: linear-gradient(135deg, #fef08a 0%, #facc15 50%, #ca8a04 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* 改為淡藍專屬漸層 */
+        .text-gradient-blue { background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 50%, #0284c7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -155,7 +155,7 @@
         .btn-twitch { background: #9146FF; color: #fff; }
         .btn-discord { background: #5865F2; color: #fff; }
         
-        .swal2-popup { background: rgba(18,18,18,0.95) !important; backdrop-filter: blur(20px) saturate(200%) !important; border: 1px solid rgba(255,255,255,0.15) !important; border-top: 1px solid rgba(255,255,255,0.3) !important; border-radius: 32px !important; color: #fff !important; }
+        .swal2-popup { background: rgba(10,18,28,0.95) !important; backdrop-filter: blur(20px) saturate(200%) !important; border: 1px solid rgba(255,255,255,0.15) !important; border-top: 1px solid rgba(255,255,255,0.3) !important; border-radius: 32px !important; color: #fff !important; }
     </style>
 </head>
 <body class="pb-36 pt-6">
@@ -166,30 +166,30 @@
         <div class="ambient-orb orb-3"></div>
     </div>
 
-    <div id="splash" class="fixed inset-0 z-[999] bg-[#030303] flex flex-col items-center justify-center transition-all duration-700">
+    <div id="splash" class="fixed inset-0 z-[999] bg-[#040f16] flex flex-col items-center justify-center transition-all duration-700">
         <div class="relative w-32 h-32 mb-10">
-            <div class="absolute inset-0 rounded-full border-2 border-yellow-500/20 animate-ping opacity-70"></div>
-            <div class="relative w-full h-full rounded-full overflow-hidden shadow-[0_0_60px_rgba(250,204,21,0.4)] border-2 border-yellow-500/60 p-1 bg-black/50">
-                <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=000&color=fff'" class="w-full h-full rounded-full object-cover">
+            <div class="absolute inset-0 rounded-full border-2 border-sky-400/20 animate-ping opacity-70"></div>
+            <div class="relative w-full h-full rounded-full overflow-hidden shadow-[0_0_60px_rgba(56,189,248,0.4)] border-2 border-sky-400/60 p-1 bg-slate-900/50">
+                <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=0f172a&color=fff'" class="w-full h-full rounded-full object-cover">
             </div>
         </div>
-        <h1 class="text-3xl font-black tracking-[0.3em] text-gradient-gold mb-8 ml-3"><i class="fa-solid fa-cake-candles mr-2"></i>生日特別版啟動中...</h1>
-        <div class="w-24 h-1 bg-black/80 rounded-full overflow-hidden border border-white/10">
-            <div class="h-full bg-gradient-to-r from-yellow-600 to-yellow-300 w-full animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+        <h1 class="text-3xl font-black tracking-[0.3em] text-gradient-blue mb-8 ml-3"><i class="fa-solid fa-cake-candles mr-2"></i>生日特別版啟動中...</h1>
+        <div class="w-24 h-1 bg-slate-900/80 rounded-full overflow-hidden border border-white/10">
+            <div class="h-full bg-gradient-to-r from-sky-500 to-sky-200 w-full animate-[pulse_1.5s_ease-in-out_infinite]"></div>
         </div>
     </div>
 
     <header class="max-w-3xl mx-auto px-5 mb-10 flex justify-between items-center relative z-10">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-[18px] bg-yellow-500/10 backdrop-blur-md flex items-center justify-center border border-yellow-500/30 shadow-[0_0_15px_rgba(250,204,21,0.2)] transform -rotate-6 overflow-hidden">
-                <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=000&color=fff'" class="w-full h-full object-cover p-1 rounded-[16px]">
+            <div class="w-12 h-12 rounded-[18px] bg-sky-400/10 backdrop-blur-md flex items-center justify-center border border-sky-400/30 shadow-[0_0_15px_rgba(56,189,248,0.2)] transform -rotate-6 overflow-hidden">
+                <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=0f172a&color=fff'" class="w-full h-full object-cover p-1 rounded-[16px]">
             </div>
             <div class="flex items-center gap-2">
                 <span class="font-black text-white tracking-[0.2em] text-lg">老王秘密基地</span>
-                <span class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-black px-2 py-0.5 rounded shadow-[0_0_8px_rgba(250,204,21,0.5)]">生日特別版</span>
+                <span class="bg-gradient-to-r from-sky-300 to-sky-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded shadow-[0_0_8px_rgba(56,189,248,0.5)]">生日特別版</span>
             </div>
         </div>
-        <button onclick="toggleSettings()" class="glass-element w-12 h-12 rounded-full text-zinc-300 flex items-center justify-center hover:text-yellow-400">
+        <button onclick="toggleSettings()" class="glass-element w-12 h-12 rounded-full text-slate-300 flex items-center justify-center hover:text-sky-400">
             <i class="fa-solid fa-sliders text-lg"></i>
         </button>
     </header>
@@ -200,19 +200,19 @@
             <div class="premium-card p-8 flex flex-col md:flex-row items-center gap-8 mb-8">
                 <div class="relative group">
                     <div class="w-40 h-40 rounded-full p-1 bg-gradient-to-br from-white/30 to-white/5 relative z-10 shadow-[0_15px_30px_rgba(0,0,0,0.6)]">
-                        <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=111&color=facc15'" class="w-full h-full rounded-full object-cover border border-white/10">
+                        <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=0f172a&color=38bdf8'" class="w-full h-full rounded-full object-cover border border-white/10">
                     </div>
                 </div>
 
                 <div class="text-center md:text-left flex-1 z-10 w-full">
-                    <h2 class="text-5xl font-black text-gradient-gold tracking-widest mb-4">老王</h2>
+                    <h2 class="text-5xl font-black text-gradient-blue tracking-widest mb-4">老王</h2>
                     
                     <div class="flex flex-wrap gap-3 justify-center md:justify-start mb-6">
-                        <p class="glass-element px-5 py-2 rounded-full text-xs font-mono text-zinc-200 tracking-wider">
-                            <i class="fa-solid fa-ruler-vertical text-yellow-500 mr-1.5"></i> 身高: 170cm
+                        <p class="glass-element px-5 py-2 rounded-full text-xs font-mono text-slate-200 tracking-wider">
+                            <i class="fa-solid fa-ruler-vertical text-sky-400 mr-1.5"></i> 身高: 170cm
                         </p>
-                        <p class="glass-element px-5 py-2 rounded-full text-xs font-mono text-zinc-200 tracking-wider border border-yellow-500/30">
-                            <i class="fa-solid fa-cake-candles text-yellow-500 mr-1.5"></i> 年齡: 19y
+                        <p class="glass-element px-5 py-2 rounded-full text-xs font-mono text-slate-200 tracking-wider border border-sky-400/40 shadow-[0_0_10px_rgba(56,189,248,0.2)]">
+                            <i class="fa-solid fa-cake-candles text-sky-400 mr-1.5"></i> 年齡: 19y
                         </p>
                     </div>
                     
@@ -228,44 +228,44 @@
             <div id="ai-suggestion-chips" class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-md"></div>
                 
             <div class="premium-card p-8 flex flex-col justify-center relative mb-8">
-                <div class="absolute -right-8 -bottom-8 opacity-5 transform rotate-12"><i class="fa-solid fa-star text-9xl text-yellow-500"></i></div>
+                <div class="absolute -right-8 -bottom-8 opacity-5 transform rotate-12"><i class="fa-solid fa-star text-9xl text-sky-400"></i></div>
                 <div class="flex justify-between items-end mb-5 relative z-10">
                     <div>
-                        <span class="text-xs text-zinc-400 font-bold block mb-2 tracking-[0.2em]">粉絲等級</span>
+                        <span class="text-xs text-slate-400 font-bold block mb-2 tracking-[0.2em]">粉絲等級</span>
                         <span id="level-title" class="text-3xl font-black text-white tracking-wider">訪客</span>
                     </div>
-                    <span id="exp-text" class="glass-element text-xs font-mono text-yellow-400 px-4 py-2 rounded-xl font-bold tracking-widest border border-yellow-500/20">0 EXP</span>
+                    <span id="exp-text" class="glass-element text-xs font-mono text-sky-400 px-4 py-2 rounded-xl font-bold tracking-widest border border-sky-500/30">0 EXP</span>
                 </div>
-                <div class="h-4 bg-black/80 rounded-full overflow-hidden border border-white/10 relative z-10 p-0.5">
-                    <div id="exp-bar" class="h-full rounded-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-300 w-0 transition-all duration-1000 exp-bar-animated relative overflow-hidden">
+                <div class="h-4 bg-slate-900/80 rounded-full overflow-hidden border border-white/10 relative z-10 p-0.5">
+                    <div id="exp-bar" class="h-full rounded-full bg-gradient-to-r from-sky-500 via-sky-300 to-white w-0 transition-all duration-1000 exp-bar-animated relative overflow-hidden">
                     </div>
                 </div>
             </div>
                 
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="dailyCheckIn()" class="glass-element rounded-[32px] p-6 flex flex-col items-center justify-center gap-4 group cursor-pointer relative">
-                    <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-yellow-500/20 group-hover:border-yellow-500/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:rotate-3 relative z-10">
-                        <i class="fa-solid fa-calendar-check text-2xl text-zinc-400 group-hover:text-yellow-400 transition-colors"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-sky-400/20 group-hover:border-sky-400/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:rotate-3 relative z-10">
+                        <i class="fa-solid fa-calendar-check text-2xl text-slate-400 group-hover:text-sky-400 transition-colors"></i>
                     </div>
-                    <span class="text-sm font-bold text-zinc-300 group-hover:text-white tracking-widest relative z-10">每日簽到</span>
+                    <span class="text-sm font-bold text-slate-300 group-hover:text-white tracking-widest relative z-10">每日簽到</span>
                 </button>
                 <button onclick="gachaQuote()" class="glass-element rounded-[32px] p-6 flex flex-col items-center justify-center gap-4 group cursor-pointer relative">
-                    <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-yellow-500/20 group-hover:border-yellow-500/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:-rotate-3 relative z-10">
-                        <i class="fa-solid fa-gift text-2xl text-zinc-400 group-hover:text-yellow-400 transition-colors"></i>
+                    <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-sky-400/20 group-hover:border-sky-400/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:-rotate-3 relative z-10">
+                        <i class="fa-solid fa-gift text-2xl text-slate-400 group-hover:text-sky-400 transition-colors"></i>
                     </div>
-                    <span class="text-sm font-bold text-zinc-300 group-hover:text-white tracking-widest relative z-10">隨機抽Q&A</span>
+                    <span class="text-sm font-bold text-slate-300 group-hover:text-white tracking-widest relative z-10">隨機抽Q&A</span>
                 </button>
             </div>
 
             <div id="home-pinned-announcements" class="mb-12 mt-12"></div>
 
             <div class="mb-10 relative">
-                <h3 class="text-sm font-bold text-zinc-400 mb-5 tracking-[0.15em] pl-2 flex items-center">
-                    <i class="fa-solid fa-magnifying-glass text-yellow-500 mr-2.5 text-lg"></i> 全知 Q&A 資料庫
+                <h3 class="text-sm font-bold text-slate-400 mb-5 tracking-[0.15em] pl-2 flex items-center">
+                    <i class="fa-solid fa-magnifying-glass text-sky-400 mr-2.5 text-lg"></i> 全知 Q&A 資料庫
                 </h3>
-                <div class="premium-card p-3 rounded-2xl flex items-center gap-4 relative z-20 focus-within:border-yellow-500/60 focus-within:shadow-[0_0_20px_rgba(250,204,21,0.2)]">
-                    <div class="pl-4 text-yellow-500/70 text-lg"><i class="fa-solid fa-terminal"></i></div>
-                    <input type="text" id="qa-search" oninput="handleSearchInput()" placeholder="輸入關鍵字 (例如: 身高、I人還是E人)..." class="w-full bg-transparent border-none outline-none text-base text-white py-2 pr-4 font-medium placeholder-zinc-500">
+                <div class="premium-card p-3 rounded-2xl flex items-center gap-4 relative z-20 focus-within:border-sky-400/60 focus-within:shadow-[0_0_20px_rgba(56,189,248,0.2)]">
+                    <div class="pl-4 text-sky-400/70 text-lg"><i class="fa-solid fa-terminal"></i></div>
+                    <input type="text" id="qa-search" oninput="handleSearchInput()" placeholder="輸入關鍵字 (例如: 身高、I人還是E人)..." class="w-full bg-transparent border-none outline-none text-base text-white py-2 pr-4 font-medium placeholder-slate-500">
                 </div>
             </div>
 
@@ -275,34 +275,34 @@
         </section>
 
         <section id="page-announcements" class="page">
-            <h2 class="text-3xl font-black text-gradient-gold mb-10 text-center tracking-[0.25em]">基地公告板</h2>
+            <h2 class="text-3xl font-black text-gradient-blue mb-10 text-center tracking-[0.25em]">基地公告板</h2>
             <div id="announcements-list" class="space-y-6"></div>
         </section>
         
         <section id="page-ai" class="page relative h-[calc(100dvh-110px)] -mx-5 px-0 mt-2">
-            <div class="flex flex-col h-full relative bg-[#080808] overflow-hidden rounded-t-[40px] border-t border-x border-white/10 shadow-[0_-20px_60px_rgba(0,0,0,0.8)]">
+            <div class="flex flex-col h-full relative bg-[#040f16] overflow-hidden rounded-t-[40px] border-t border-x border-white/10 shadow-[0_-20px_60px_rgba(0,0,0,0.8)]">
                 
-                <div class="w-full z-30 bg-gradient-to-b from-[#080808] to-transparent pt-6 pb-4 px-6 md:px-8">
+                <div class="w-full z-30 bg-gradient-to-b from-[#040f16] to-transparent pt-6 pb-4 px-6 md:px-8">
                     <div class="max-w-3xl mx-auto flex justify-between items-center">
                         
                         <div class="relative group">
-                            <div class="absolute -inset-1 bg-gradient-to-r from-yellow-500/20 to-transparent rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div class="relative flex items-center bg-white/5 hover:bg-white/10 border border-white/10 hover:border-yellow-500/50 rounded-xl px-4 py-2 cursor-pointer transition-all duration-300 shadow-lg overflow-hidden">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-sky-400/20 to-transparent rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="relative flex items-center bg-white/5 hover:bg-white/10 border border-white/10 hover:border-sky-400/50 rounded-xl px-4 py-2 cursor-pointer transition-all duration-300 shadow-lg overflow-hidden">
                                 <select id="ai-engine-selector" onchange="switchAIEngine(this.value)" class="bg-transparent text-white font-black text-sm md:text-base tracking-wide outline-none cursor-pointer appearance-none pr-8 z-10 w-[140px] md:w-[150px]">
-                                    <option value="auto" id="opt-auto" class="bg-[#111] text-yellow-400">🌟 自動切換</option>
-                                    <option value="gemini" id="opt-gemini" class="bg-[#111] text-white">✨ Gemini-2.5-Flash</option>
-                                    <option value="groq" id="opt-groq" class="bg-[#111] text-white">⚡ Allam-2-7b</option>
-                                    <option value="cohere" id="opt-cohere" class="bg-[#111] text-white">🧠 Embed-english-light-v3.0</option>
-                                    <option value="hf" id="opt-hf" class="bg-[#111] text-white">🧊 Qwen/Qwen2.5-7B-Instruct</option>
-                                    <option value="local" id="opt-local" class="bg-[#111] text-zinc-400">📴 離線本地老王資料庫</option>
+                                    <option value="auto" id="opt-auto" class="bg-slate-900 text-sky-400">🌟 自動切換</option>
+                                    <option value="gemini" id="opt-gemini" class="bg-slate-900 text-white">✨ Gemini-2.5-Flash</option>
+                                    <option value="groq" id="opt-groq" class="bg-slate-900 text-white">⚡ Allam-2-7b</option>
+                                    <option value="cohere" id="opt-cohere" class="bg-slate-900 text-white">🧠 Embed-english-light-v3.0</option>
+                                    <option value="hf" id="opt-hf" class="bg-slate-900 text-white">🧊 Qwen/Qwen2.5-7B-Instruct</option>
+                                    <option value="local" id="opt-local" class="bg-slate-900 text-slate-400">📴 離線本地老王資料庫</option>
                                 </select>
-                                <div class="absolute right-4 text-[10px] text-yellow-500 transition-transform duration-300 group-hover:-translate-y-0.5 pointer-events-none z-0">
+                                <div class="absolute right-4 text-[10px] text-sky-400 transition-transform duration-300 group-hover:-translate-y-0.5 pointer-events-none z-0">
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </div>
-                                <div class="absolute left-0 top-0 w-1 h-full bg-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.8)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div class="absolute left-0 top-0 w-1 h-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.8)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
-                            <div id="ai-status-text" class="absolute -bottom-5 left-2 text-[10px] text-zinc-400 font-mono tracking-widest flex items-center gap-1.5 whitespace-nowrap opacity-70">
-                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> AI待命
+                            <div id="ai-status-text" class="absolute -bottom-5 left-2 text-[10px] text-slate-400 font-mono tracking-widest flex items-center gap-1.5 whitespace-nowrap opacity-70">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span> AI待命
                             </div>
                         </div>
 
@@ -313,46 +313,46 @@
                     
                     <div class="mt-4 mb-8 flex flex-col items-center justify-center text-center animate-[smoothReveal_0.6s_ease]">
                         <div class="relative w-20 h-20 mb-6 group">
-                            <div class="absolute inset-0 bg-yellow-500/20 rounded-full blur-xl group-hover:bg-yellow-500/40 transition-all duration-700"></div>
-                            <div class="relative w-full h-full rounded-full border border-yellow-500/30 p-1 bg-gradient-to-br from-[#1a1a1a] to-[#050505] shadow-[0_0_40px_rgba(250,204,21,0.15)] overflow-hidden">
+                            <div class="absolute inset-0 bg-sky-400/20 rounded-full blur-xl group-hover:bg-sky-400/40 transition-all duration-700"></div>
+                            <div class="relative w-full h-full rounded-full border border-sky-400/30 p-1 bg-gradient-to-br from-[#1e293b] to-[#0f172a] shadow-[0_0_40px_rgba(56,189,248,0.15)] overflow-hidden">
                                 <img src="avatar-ai.jpg" onerror="this.src='avatar-profile.jpg'" class="w-full h-full rounded-full object-cover">
                             </div>
                         </div>
-                        <h3 class="text-2xl font-black tracking-[0.2em] mb-2 text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-white to-zinc-400">基地核心 AI</h3>
-                        <p class="text-xs text-zinc-500 font-medium tracking-wide mb-8 max-w-xs leading-relaxed">已掛載最新機密檔案與記憶模組，請輸入指令或選擇推薦問題。</p>
+                        <h3 class="text-2xl font-black tracking-[0.2em] mb-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-400">基地核心 AI</h3>
+                        <p class="text-xs text-slate-500 font-medium tracking-wide mb-8 max-w-xs leading-relaxed">已掛載最新機密檔案與記憶模組，請輸入指令或選擇推薦問題。</p>
                         
                         <div id="ai-suggestion-chips" class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
-                            <div class="h-16 bg-zinc-900/30 border border-white/5 rounded-2xl animate-pulse"></div>
-                            <div class="h-16 bg-zinc-900/30 border border-white/5 rounded-2xl animate-pulse"></div>
+                            <div class="h-16 bg-slate-800/30 border border-white/5 rounded-2xl animate-pulse"></div>
+                            <div class="h-16 bg-slate-800/30 border border-white/5 rounded-2xl animate-pulse"></div>
                         </div>
                     </div>
 
                 </div>
 
-                <div class="absolute bottom-[80px] left-0 w-full bg-gradient-to-t from-[#080808] via-[#080808]/95 to-transparent pt-16 pb-6 px-4 md:px-5 z-20 pointer-events-none">
+                <div class="absolute bottom-[80px] left-0 w-full bg-gradient-to-t from-[#040f16] via-[#040f16]/95 to-transparent pt-16 pb-6 px-4 md:px-5 z-20 pointer-events-none">
                     <div class="max-w-3xl mx-auto relative pointer-events-auto">
-                        <div class="bg-[#171717] border border-white/10 rounded-[28px] flex flex-col shadow-[0_15px_50px_rgba(0,0,0,0.9)] transition-all duration-300 focus-within:border-yellow-500/50 focus-within:bg-[#1c1c1c] focus-within:shadow-[0_0_30px_rgba(250,204,21,0.1)] relative overflow-hidden group">
+                        <div class="bg-[#0f172a] border border-white/10 rounded-[28px] flex flex-col shadow-[0_15px_50px_rgba(0,0,0,0.9)] transition-all duration-300 focus-within:border-sky-400/50 focus-within:bg-[#1e293b] focus-within:shadow-[0_0_30px_rgba(56,189,248,0.1)] relative overflow-hidden group">
                             <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
                             
-                            <textarea id="ai-input" rows="1" onkeypress="handleAIKeyPress(event)" oninput="this.style.height = '';this.style.height = Math.min(this.scrollHeight, 200) + 'px'" placeholder="傳送訊息給基地核心 AI..." class="w-full bg-transparent text-zinc-100 px-6 pt-5 pb-3 resize-none outline-none max-h-[200px] min-h-[60px] text-base placeholder-zinc-500 leading-relaxed no-scrollbar relative z-10"></textarea>
+                            <textarea id="ai-input" rows="1" onkeypress="handleAIKeyPress(event)" oninput="this.style.height = '';this.style.height = Math.min(this.scrollHeight, 200) + 'px'" placeholder="傳送訊息給基地核心 AI..." class="w-full bg-transparent text-slate-100 px-6 pt-5 pb-3 resize-none outline-none max-h-[200px] min-h-[60px] text-base placeholder-slate-500 leading-relaxed no-scrollbar relative z-10"></textarea>
                             
                             <div class="flex justify-between items-end px-3 pb-3 relative z-10">
                                 <div class="flex items-center gap-1 pl-2">
-                                    <button class="w-8 h-8 rounded-full text-zinc-600 hover:text-yellow-400 hover:bg-white/5 transition-all flex items-center justify-center cursor-not-allowed" title="附加檔案 (目前不支援)">
+                                    <button class="w-8 h-8 rounded-full text-slate-500 hover:text-sky-400 hover:bg-white/5 transition-all flex items-center justify-center cursor-not-allowed" title="附加檔案 (目前不支援)">
                                         <i class="fa-solid fa-paperclip text-sm"></i>
                                     </button>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <button id="ai-stop-btn" onclick="stopAIGeneration()" class="hidden w-10 h-10 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all flex flex-col items-center justify-center shadow-lg" title="停止生成">
+                                    <button id="ai-stop-btn" onclick="stopAIGeneration()" class="hidden w-10 h-10 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all flex flex-col items-center justify-center shadow-lg" title="停止生成">
                                         <i class="fa-solid fa-square text-[12px]"></i>
                                     </button>
-                                    <button id="ai-send-btn" onclick="sendAIMessage()" class="w-10 h-10 rounded-full bg-zinc-200 text-black flex items-center justify-center hover:bg-white hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:hover:shadow-none">
+                                    <button id="ai-send-btn" onclick="sendAIMessage()" class="w-10 h-10 rounded-full bg-slate-200 text-black flex items-center justify-center hover:bg-white hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:bg-slate-700 disabled:text-slate-500 disabled:hover:shadow-none">
                                         <i class="fa-solid fa-arrow-up text-base"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-center mt-3 text-[10px] text-zinc-600 font-mono tracking-widest px-4 leading-tight">
+                        <div class="text-center mt-3 text-[10px] text-slate-600 font-mono tracking-widest px-4 leading-tight">
                             AI 核心偶爾會產生幻覺，請以基地官方公告為主。
                         </div>
                     </div>
@@ -362,10 +362,10 @@
         </section>
 
         <section id="page-timeline" class="page">
-            <h2 class="text-3xl font-black text-gradient-gold mb-12 text-center tracking-[0.2em]">成長軌跡</h2>
+            <h2 class="text-3xl font-black text-gradient-blue mb-12 text-center tracking-[0.2em]">成長軌跡</h2>
             <div class="premium-card p-8 md:p-12 relative overflow-hidden">
                 <div class="relative ml-2 md:ml-8" id="timeline-wrapper">
-                    <div class="absolute left-[7px] top-2 bottom-0 w-[2px] bg-gradient-to-b from-yellow-500/80 via-white/20 to-transparent"></div>
+                    <div class="absolute left-[7px] top-2 bottom-0 w-[2px] bg-gradient-to-b from-sky-400/80 via-white/20 to-transparent"></div>
                     <div id="timeline-nodes-container" class="space-y-12"></div>
                 </div>
             </div>
@@ -373,24 +373,24 @@
 
         <section id="page-id" class="page">
             <div class="premium-card p-12 text-center max-w-sm mx-auto relative overflow-hidden">
-                <h2 class="text-2xl font-black mb-4 text-gradient-gold relative z-10 tracking-[0.15em]">專屬粉絲認證卡</h2>
-                <p class="text-xs text-zinc-400 mb-8 relative z-10 font-mono tracking-wider">輸入專屬暱稱，生成專屬認證卡。</p>
+                <h2 class="text-2xl font-black mb-4 text-gradient-blue relative z-10 tracking-[0.15em]">專屬粉絲認證卡</h2>
+                <p class="text-xs text-slate-400 mb-8 relative z-10 font-mono tracking-wider">輸入專屬暱稱，生成專屬認證卡。</p>
                 
-                <div class="w-36 h-36 mx-auto rounded-full p-1.5 glass-element mb-8 relative z-10 shadow-[0_0_30px_rgba(250,204,21,0.2)] border-yellow-500/30">
-                    <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=111&color=facc15'" class="w-full h-full rounded-full object-cover border border-white/10">
-                    <div class="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 text-black text-sm font-black rounded-full flex items-center justify-center border-4 border-[#111]"><i class="fa-solid fa-crown"></i></div>
+                <div class="w-36 h-36 mx-auto rounded-full p-1.5 glass-element mb-8 relative z-10 shadow-[0_0_30px_rgba(56,189,248,0.2)] border-sky-400/30">
+                    <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=0f172a&color=38bdf8'" class="w-full h-full rounded-full object-cover border border-white/10">
+                    <div class="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-br from-sky-300 to-sky-500 text-slate-900 text-sm font-black rounded-full flex items-center justify-center border-4 border-[#040f16]"><i class="fa-solid fa-crown"></i></div>
                 </div>
 
-                <div class="glass-element p-2 mb-8 relative z-10 rounded-2xl focus-within:border-yellow-500/60 transition-colors">
-                    <input type="text" id="id-name" maxlength="10" placeholder="輸入專屬暱稱（例如：老王）" class="w-full bg-transparent py-4 px-3 text-center focus:outline-none font-bold text-white text-lg tracking-widest placeholder-zinc-500">
+                <div class="glass-element p-2 mb-8 relative z-10 rounded-2xl focus-within:border-sky-400/60 transition-colors">
+                    <input type="text" id="id-name" maxlength="10" placeholder="輸入專屬暱稱（例如：老王）" class="w-full bg-transparent py-4 px-3 text-center focus:outline-none font-bold text-white text-lg tracking-widest placeholder-slate-500">
                 </div>
                 
                 <div class="flex flex-col gap-4 relative z-10">
-                    <button onclick="generateIDCard()" class="bg-gradient-to-br from-zinc-200 to-white text-black py-4 rounded-2xl text-sm font-black hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all flex justify-center items-center gap-2">
+                    <button onclick="generateIDCard()" class="bg-gradient-to-br from-slate-200 to-white text-slate-900 py-4 rounded-2xl text-sm font-black hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all flex justify-center items-center gap-2">
                         <i class="fa-solid fa-id-card"></i> 一般粉絲認證卡
                     </button>
-                    <button onclick="generateBirthdayIDCard()" class="bg-gradient-to-br from-yellow-400 to-yellow-600 text-black py-4 rounded-2xl text-sm font-black hover:scale-105 hover:shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all flex justify-center items-center gap-2 border border-yellow-300">
-                        <i class="fa-solid fa-cake-candles text-lg"></i> 鑄造生日限定金卡
+                    <button onclick="generateBirthdayIDCard()" class="bg-gradient-to-br from-sky-400 to-sky-600 text-white py-4 rounded-2xl text-sm font-black hover:scale-105 hover:shadow-[0_0_25px_rgba(56,189,248,0.5)] transition-all flex justify-center items-center gap-2 border border-sky-300">
+                        <i class="fa-solid fa-cake-candles text-lg text-sky-100"></i> 鑄造生日限定藍卡
                     </button>
                 </div>
             </div>
@@ -400,21 +400,21 @@
         <section id="page-quiz" class="page">
             <div id="quiz-intro" class="premium-card p-12 text-center max-w-sm mx-auto">
                 <div class="mb-8 relative quiz-profile-container">
-                    <img src="avatar-profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=111&color=facc15'" class="w-32 h-32 rounded-full mx-auto border-4 border-yellow-500/30 shadow-[0_0_20px_rgba(250,204,21,0.4)] object-cover bg-black">
+                    <img src="avatar-profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=0f172a&color=38bdf8'" class="w-32 h-32 rounded-full mx-auto border-4 border-sky-400/30 shadow-[0_0_20px_rgba(56,189,248,0.4)] object-cover bg-slate-900">
                 </div>
-                <h2 class="text-3xl font-black mb-5 text-gradient-gold tracking-widest">鐵粉測驗</h2>
-                <p class="text-zinc-400 text-xs mb-10 leading-relaxed font-mono tracking-wider">挑戰 10 道題目<br>證明你的鐵粉程度。</p>
-                <div class="glass-element p-2 mb-10 rounded-2xl focus-within:border-yellow-500/60">
-                    <input type="text" id="quiz-player-name" placeholder="輸入大名或暱稱（例如：老王）" class="w-full bg-transparent py-4 px-3 text-center focus:outline-none font-bold text-white text-base tracking-widest placeholder-zinc-500">
+                <h2 class="text-3xl font-black mb-5 text-gradient-blue tracking-widest">鐵粉測驗</h2>
+                <p class="text-slate-400 text-xs mb-10 leading-relaxed font-mono tracking-wider">挑戰 10 道題目<br>證明你的鐵粉程度。</p>
+                <div class="glass-element p-2 mb-10 rounded-2xl focus-within:border-sky-400/60">
+                    <input type="text" id="quiz-player-name" placeholder="輸入大名或暱稱（例如：老王）" class="w-full bg-transparent py-4 px-3 text-center focus:outline-none font-bold text-white text-base tracking-widest placeholder-slate-500">
                 </div>
-                <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black py-4 rounded-2xl font-black text-base hover:from-yellow-400 hover:to-yellow-500 transition-all hover:-translate-y-1 tracking-widest">開始測驗</button>
+                <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-sky-400 to-sky-500 text-white py-4 rounded-2xl font-black text-base hover:from-sky-300 hover:to-sky-400 transition-all hover:-translate-y-1 tracking-widest shadow-[0_0_15px_rgba(56,189,248,0.3)]">開始測驗</button>
             </div>
             <div id="quiz-area" class="hidden flex-col max-w-md mx-auto">
                 <div class="flex justify-between items-center mb-8 px-2">
-                    <span id="quiz-progress" class="glass-element text-zinc-200 text-xs font-bold px-5 py-2.5 rounded-full tracking-widest">第 1 / 共 10 題</span>
-                    <span id="quiz-score" class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-xs font-black px-5 py-2.5 rounded-full tracking-wider">目前積分: 0</span>
+                    <span id="quiz-progress" class="glass-element text-slate-200 text-xs font-bold px-5 py-2.5 rounded-full tracking-widest">第 1 / 共 10 題</span>
+                    <span id="quiz-score" class="bg-sky-400/20 text-sky-400 border border-sky-400/40 text-xs font-black px-5 py-2.5 rounded-full tracking-wider">目前積分: 0</span>
                 </div>
-                <div class="premium-card p-10 mb-8 border-l-4 border-l-yellow-500 relative"><h3 id="quiz-question" class="text-xl font-black text-white leading-relaxed text-center relative z-10 tracking-wide">載入中...</h3></div>
+                <div class="premium-card p-10 mb-8 border-l-4 border-l-sky-400 relative"><h3 id="quiz-question" class="text-xl font-black text-white leading-relaxed text-center relative z-10 tracking-wide">載入中...</h3></div>
                 <div id="quiz-options" class="space-y-4"></div>
             </div>
             <canvas id="quiz-canvas" width="1080" height="1500" style="display:none;"></canvas>
@@ -432,31 +432,31 @@
         </nav>
     </div>
 
-    <div id="settings-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md hidden flex-col items-center justify-center px-5 opacity-0 transition-opacity duration-400">
+    <div id="settings-modal" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md hidden flex-col items-center justify-center px-5 opacity-0 transition-opacity duration-400">
         <div class="premium-card w-full max-w-sm rounded-[36px] p-10 transform scale-95 transition-transform duration-400" id="settings-content">
             <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
-                <h3 class="text-xl font-black text-white tracking-[0.2em]"><i class="fa-solid fa-sliders text-yellow-500 mr-3"></i>系統控制中心</h3>
-                <button onclick="toggleSettings()" class="w-10 h-10 rounded-full glass-element text-zinc-300 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="text-xl font-black text-white tracking-[0.2em]"><i class="fa-solid fa-sliders text-sky-400 mr-3"></i>系統控制中心</h3>
+                <button onclick="toggleSettings()" class="w-10 h-10 rounded-full glass-element text-slate-300 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
             <div class="space-y-6">
                 <div class="flex justify-between items-center glass-element p-6 rounded-3xl">
-                    <div class="text-sm font-bold text-zinc-200 tracking-wider">系統提示音效</div>
+                    <div class="text-sm font-bold text-slate-200 tracking-wider">系統提示音效</div>
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" id="sound-toggle" class="sr-only peer" onchange="saveSettings()">
-                      <div class="w-12 h-6 bg-black/80 border border-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-yellow-500 peer-checked:to-yellow-400"></div>
+                      <div class="w-12 h-6 bg-slate-900/80 border border-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-sky-400 peer-checked:to-sky-300"></div>
                     </label>
                 </div>
                 
                 <div class="glass-element p-6 rounded-3xl">
                     <div class="flex justify-between items-center mb-6">
-                        <span class="text-sm font-bold text-zinc-200 tracking-wider">每頁問答數量</span>
-                        <span id="qa-count-display" class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-xs px-4 py-1.5 rounded-xl font-black">6 題</span>
+                        <span class="text-sm font-bold text-slate-200 tracking-wider">每頁問答數量</span>
+                        <span id="qa-count-display" class="bg-sky-400/20 text-sky-400 border border-sky-400/40 text-xs px-4 py-1.5 rounded-xl font-black">6 題</span>
                     </div>
-                    <input type="range" id="qa-per-page-slider" min="4" max="16" step="2" value="6" oninput="updateQASetting(this.value)" class="w-full accent-yellow-500">
+                    <input type="range" id="qa-per-page-slider" min="4" max="16" step="2" value="6" oninput="updateQASetting(this.value)" class="w-full accent-sky-400">
                 </div>
 
-                <button onclick="showChangelog()" class="w-full glass-element py-5 rounded-3xl text-sm font-bold text-zinc-300 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 hover:border-yellow-500/50 hover:shadow-[0_0_25px_rgba(250,204,21,0.25)] hover:-translate-y-1">
+                <button onclick="showChangelog()" class="w-full glass-element py-5 rounded-3xl text-sm font-bold text-slate-300 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 hover:border-sky-400/50 hover:shadow-[0_0_25px_rgba(56,189,248,0.25)] hover:-translate-y-1">
                     <i class="fa-solid fa-file-code text-lg"></i> 查看程式更新日誌
                 </button>
             </div>
@@ -473,24 +473,23 @@
                     setTimeout(() => { 
                         splash.style.display = 'none'; 
                         
-                        // --- 載入完成後觸發：老王生日專屬彈窗 ---
+                        // --- 載入完成後觸發：老王生日專屬淡藍彈窗 ---
                         Swal.fire({
-                            background: 'rgba(18, 18, 18, 0.95)',
+                            background: 'rgba(10, 18, 28, 0.95)',
                             color: '#fff',
                             backdrop: `rgba(0,0,0,0.75) backdrop-filter: blur(10px)`,
-                            title: '<div class="text-4xl mb-2"><i class="fa-solid fa-cake-candles text-yellow-400"></i></div><h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest">老王生日快樂！</h2>',
-                            html: '<div class="text-zinc-300 text-sm leading-relaxed mt-2"><p>今天是老王的生日！🎂</p><p>身為專屬基地的鐵粉，趕快去他的最新影片底下<br><span class="text-yellow-400 font-bold border-b border-yellow-400/50 pb-0.5">留言祝他生日快樂吧！</span></p></div>',
+                            title: '<div class="text-4xl mb-2"><i class="fa-solid fa-cake-candles text-sky-400"></i></div><h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-sky-500 tracking-widest">老王生日快樂！</h2>',
+                            html: '<div class="text-slate-300 text-sm leading-relaxed mt-2"><p>今天是老王的生日！🎂</p><p>身為專屬基地的鐵粉，趕快去他的最新影片底下<br><span class="text-sky-400 font-bold border-b border-sky-400/50 pb-0.5">留言祝他生日快樂吧！</span></p></div>',
                             showCancelButton: true,
                             confirmButtonText: '<i class="fa-brands fa-tiktok mr-1"></i> 前往 TikTok 祝賀',
                             cancelButtonText: '稍後再說',
                             customClass: {
-                                popup: 'border border-yellow-500/30 rounded-3xl shadow-[0_0_50px_rgba(250,204,21,0.2)] backdrop-blur-xl',
-                                confirmButton: 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-black rounded-xl px-6 py-3 shadow-[0_5px_15px_rgba(250,204,21,0.3)] hover:scale-105 transition-transform w-full mb-2 sm:mb-0 sm:w-auto',
-                                cancelButton: 'bg-[#222] text-zinc-300 font-bold rounded-xl px-6 py-3 hover:bg-[#333] transition-colors w-full sm:w-auto'
+                                popup: 'border border-sky-500/30 rounded-3xl shadow-[0_0_50px_rgba(56,189,248,0.2)] backdrop-blur-xl',
+                                confirmButton: 'bg-gradient-to-r from-sky-400 to-sky-600 text-white font-black rounded-xl px-6 py-3 shadow-[0_5px_15px_rgba(56,189,248,0.4)] hover:scale-105 transition-transform w-full mb-2 sm:mb-0 sm:w-auto',
+                                cancelButton: 'bg-slate-800 text-slate-300 font-bold rounded-xl px-6 py-3 hover:bg-slate-700 transition-colors w-full sm:w-auto'
                             }
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // 點擊確認後，開新分頁前往老王的 TikTok
                                 window.open('https://www.tiktok.com/@z.knccc', '_blank');
                             }
                         });
