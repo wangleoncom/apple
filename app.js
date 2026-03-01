@@ -306,7 +306,12 @@ function renderAISuggestions() {
         const randomIcon = icons[index];
         const safeQ = item.q.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         
-        
+        return `
+            <button onclick="document.getElementById('ai-input').value='${safeQ}'; document.getElementById('ai-input').focus();" class="text-left bg-zinc-900/50 hover:bg-zinc-800 border border-white/5 hover:border-white/10 p-4 rounded-2xl transition-all group overflow-hidden shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.15)] hover:-translate-y-1">
+                <div class="text-zinc-300 text-sm font-bold mb-1 group-hover:text-sky-400 transition-colors">${randomIcon} 基地解密</div>
+                <div class="text-zinc-500 text-xs truncate w-full tracking-wide" title="${item.q}">${item.q}</div>
+            </button>
+        `;
     }).join('');
 }
 
@@ -835,7 +840,7 @@ window.generateIDCard = function() {
     };
 };
 
-// === 2. 生日專屬認證卡生成 (純中文俐落版：淡藍 x 香檳金) ===
+// === 2. 生日專屬認證卡生成 (純中文俐落版：淡藍 x 香檳金 + 隨機旋轉蛋糕) ===
 window.generateBirthdayIDCard = async function() {
     playClickSound();
     const nameInput = document.getElementById('id-name').value.trim() || "尊榮粉絲";
@@ -843,7 +848,7 @@ window.generateBirthdayIDCard = async function() {
     // 震撼的過場動畫
     PremiumSwal.fire({ 
         title: '<div class="animate-pulse text-yellow-400"><i class="fa-solid fa-cake-candles"></i></div>',
-        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-sky-400 font-mono tracking-widest">注入三月一日專屬能量中...</div>',
+        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-sky-400 font-mono tracking-widest">注入專屬能量中...</div>',
         showConfirmButton: false, 
         allowOutsideClick: false,
         timer: 1500
@@ -860,12 +865,12 @@ window.generateBirthdayIDCard = async function() {
         
         // 2. 雙重漸層光暈 (頂部香檳金，底部淡藍色)
         const gradGold = ctx.createRadialGradient(540, 200, 100, 540, 400, 900);
-        gradGold.addColorStop(0, 'rgba(251, 191, 36, 0.25)'); // yellow-400
+        gradGold.addColorStop(0, 'rgba(251, 191, 36, 0.25)');
         gradGold.addColorStop(1, 'transparent');
         ctx.fillStyle = gradGold; ctx.fillRect(0, 0, 1080, 1500);
 
         const gradBlue = ctx.createRadialGradient(540, 1200, 100, 540, 1000, 800);
-        gradBlue.addColorStop(0, 'rgba(56, 189, 248, 0.15)'); // sky-500
+        gradBlue.addColorStop(0, 'rgba(56, 189, 248, 0.15)');
         gradBlue.addColorStop(1, 'transparent');
         ctx.fillStyle = gradBlue; ctx.fillRect(0, 0, 1080, 1500);
         
@@ -878,7 +883,26 @@ window.generateBirthdayIDCard = async function() {
         ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.roundRect(95, 95, 890, 1310, 35); ctx.stroke();
 
-        // (已移除滿版蛋糕浮水印，保持畫面純淨)
+        // === 🍰 隨機 360 度旋轉的蛋糕浮水印 ===
+        ctx.save();
+        ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
+        ctx.globalAlpha = 0.05; // 淡淡的浮水印
+        ctx.font = '60px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // 產生 60 個隨機位置、隨機旋轉的蛋糕
+        for(let i = 0; i < 60; i++) {
+            let randX = 80 + Math.random() * 920;
+            let randY = 80 + Math.random() * 1340;
+            let randAngle = Math.random() * Math.PI * 2; // 0 ~ 360度
+            
+            ctx.save();
+            ctx.translate(randX, randY);
+            ctx.rotate(randAngle);
+            ctx.fillText('🎂', 0, 0);
+            ctx.restore();
+        }
+        ctx.restore();
 
         // 4. 左上角專屬晶片 (淡藍芯 + 金邊)
         ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
@@ -892,7 +916,7 @@ window.generateBirthdayIDCard = async function() {
         avatarImg.src = "avatar-main.jpg";
 
         const finalizeDraw = (usedFallback = false) => {
-            // 繪製卡面雷射反光斜紋 (提升卡片材質的立體感)
+            // 雷射反光斜紋
             ctx.save();
             ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
             ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
@@ -901,28 +925,28 @@ window.generateBirthdayIDCard = async function() {
 
             ctx.textAlign = "center";
             
-            // ⭐ 頂部標題 (純中文)
+            // ⭐ 頂部標題 (移除三月一日，保留純粹生日特別版)
             ctx.fillStyle = '#facc15'; ctx.font = '900 40px "PingFang TC", sans-serif'; ctx.letterSpacing = "8px"; 
-            ctx.fillText('三月一日 生日特別版', 540, 860);
+            ctx.fillText('生日特別版', 540, 860);
             
             // 名字印製
             ctx.fillStyle = '#FFFFFF'; ctx.font = '900 130px "PingFang TC", sans-serif'; 
-            ctx.shadowColor = 'rgba(251, 191, 36, 0.4)'; ctx.shadowBlur = 20; // 名字發出淡淡金光
+            ctx.shadowColor = 'rgba(251, 191, 36, 0.4)'; ctx.shadowBlur = 20; 
             ctx.fillText(nameInput, 540, 1020);
-            ctx.shadowBlur = 0; // 重置陰影
+            ctx.shadowBlur = 0;
 
-            // 分隔線 (淡藍)
+            // 分隔線
             ctx.fillStyle = 'rgba(56, 189, 248, 0.3)'; ctx.fillRect(240, 1100, 600, 2);
 
             // ⭐ 替換為「老王生日限定版」
             ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px "PingFang TC", sans-serif'; ctx.letterSpacing = "4px"; 
             ctx.fillText('老王生日限定版', 540, 1150);
             
-            // ⭐ 專屬編號 (純中文)
+            // ⭐ 專屬編號 (改用阿拉伯數字)
             ctx.fillStyle = '#facc15'; ctx.font = 'bold 28px "PingFang TC", sans-serif'; ctx.letterSpacing = "2px"; 
-            ctx.fillText(`專屬編號：三零一-${Date.now().toString().slice(-6)}`, 540, 1200);
+            ctx.fillText(`專屬編號：${Date.now().toString().slice(-6)}`, 540, 1200);
             
-            // 底部裝飾條碼生成
+            // 底部裝飾條碼
             ctx.fillStyle = '#444';
             for(let i=0; i<30; i++) {
                 let w = Math.random() * 8 + 2; ctx.fillRect(300 + i*16, 1250, w, 60);
@@ -936,18 +960,16 @@ window.generateBirthdayIDCard = async function() {
                     imageUrl: canvas.toDataURL('image/jpeg', 0.98), imageWidth: '90%',
                     imageClass: 'rounded-2xl shadow-[0_0_40px_rgba(251,191,36,0.3)] border border-[#333]'
                 });
-                gainExp(50); // 送出巨量經驗值
+                gainExp(50);
             }, 600);
         };
 
         avatarImg.onload = () => {
-            // 頭像光暈 (金藍交織)
             ctx.shadowColor = 'rgba(251, 191, 36, 0.6)'; ctx.shadowBlur = 60;
             ctx.save(); ctx.beginPath(); ctx.arc(540, 480, 260, 0, Math.PI * 2); ctx.clip();
             ctx.drawImage(avatarImg, 280, 220, 520, 520); ctx.restore();
             ctx.shadowBlur = 0;
             
-            // 雙層頭像框：外層淡藍，內層香檳金
             ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(540, 480, 264, 0, Math.PI * 2); ctx.stroke();
             ctx.strokeStyle = '#facc15'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(540, 480, 256, 0, Math.PI * 2); ctx.stroke();
             
@@ -966,7 +988,7 @@ window.generateBirthdayIDCard = async function() {
                 finalizeDraw(true);
             };
         };
-    }, 1500); // 配合前面的動畫延遲
+    }, 1500);
 };
 
 // === 會考系統 ===
