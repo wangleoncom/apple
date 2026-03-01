@@ -835,15 +835,15 @@ window.generateIDCard = function() {
     };
 };
 
-// === 2. 生日專屬認證卡生成 (流光幻金：淡藍 x 香檳金 SSR 限定版) ===
+// === 2. 生日專屬認證卡生成 (全中文 + 蛋糕浮水印 SSR 限定版) ===
 window.generateBirthdayIDCard = async function() {
     playClickSound();
     const nameInput = document.getElementById('id-name').value.trim() || "尊榮粉絲";
     
-    // 增加一個震撼的過場動畫，提升「限定感」
+    // 震撼的過場動畫
     PremiumSwal.fire({ 
         title: '<div class="animate-pulse text-yellow-400"><i class="fa-solid fa-cake-candles"></i></div>',
-        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動 SSR 限定鑄造協議</div><div class="text-xs text-sky-400 font-mono tracking-widest">注入 03.01 專屬能量中...</div>',
+        html: '<div class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 tracking-widest mt-2 mb-4">啟動生日專屬鑄造協議</div><div class="text-xs text-sky-400 font-mono tracking-widest">注入 03.01 專屬能量中...</div>',
         showConfirmButton: false, 
         allowOutsideClick: false,
         timer: 1500
@@ -878,6 +878,20 @@ window.generateBirthdayIDCard = async function() {
         ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.roundRect(95, 95, 890, 1310, 35); ctx.stroke();
 
+        // === 🍰 新增：生日蛋糕 Emoji 浮水印背景 ===
+        ctx.save();
+        ctx.beginPath(); ctx.roundRect(80, 80, 920, 1340, 50); ctx.clip();
+        ctx.font = '50px Arial';
+        ctx.globalAlpha = 0.04; // 透明度調得很低，呈現高級浮水印質感
+        for(let i = -1; i < 10; i++) {
+            for(let j = -1; j < 15; j++) {
+                // 交錯排版，讓蛋糕佈滿整個背景
+                let offsetX = (j % 2 === 0) ? 0 : 60; 
+                ctx.fillText('🎂', 80 + i * 120 + offsetX, 100 + j * 100);
+            }
+        }
+        ctx.restore();
+
         // 4. 左上角專屬晶片 (淡藍芯 + 金邊)
         ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
         ctx.strokeRect(140, 140, 80, 60);
@@ -899,9 +913,9 @@ window.generateBirthdayIDCard = async function() {
 
             ctx.textAlign = "center";
             
-            // 限定版標題 (金)
-            ctx.fillStyle = '#facc15'; ctx.font = '900 32px "SF Pro Display", sans-serif'; ctx.letterSpacing = "10px"; 
-            ctx.fillText('03.01 BIRTHDAY EXCLUSIVE', 540, 860);
+            // ⭐ 限定版標題 (全中文)
+            ctx.fillStyle = '#facc15'; ctx.font = '900 40px "PingFang TC", sans-serif'; ctx.letterSpacing = "8px"; 
+            ctx.fillText('03.01 生日特別版', 540, 860);
             
             // 名字印製
             ctx.fillStyle = '#FFFFFF'; ctx.font = '900 130px "PingFang TC", sans-serif'; 
@@ -912,12 +926,12 @@ window.generateBirthdayIDCard = async function() {
             // 分隔線 (淡藍)
             ctx.fillStyle = 'rgba(56, 189, 248, 0.3)'; ctx.fillRect(240, 1100, 600, 2);
 
-            // 專屬序號與日期
-            ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 28px monospace'; ctx.letterSpacing = "3px"; 
-            ctx.fillText(`CLASS: SSR-LIMITED`, 540, 1150);
+            // ⭐ 專屬序號與稀有度 (全中文)
+            ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 30px "PingFang TC", sans-serif'; ctx.letterSpacing = "4px"; 
+            ctx.fillText(`稀有度：SSR 限定版`, 540, 1150);
             
-            ctx.fillStyle = '#facc15'; ctx.font = 'bold 30px monospace'; ctx.letterSpacing = "2px"; 
-            ctx.fillText(`ID: BDAY-${Date.now().toString().slice(-6)}`, 540, 1200);
+            ctx.fillStyle = '#facc15'; ctx.font = 'bold 28px monospace'; ctx.letterSpacing = "2px"; 
+            ctx.fillText(`專屬編號：BDAY-${Date.now().toString().slice(-6)}`, 540, 1200);
             
             // 條碼生成
             ctx.fillStyle = '#444';
