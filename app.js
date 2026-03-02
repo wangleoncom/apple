@@ -1,14 +1,11 @@
 /**
  * ==========================================================================
- * 老王專屬秘密基地 - 核心邏輯腳本 (v14.0 終極商業版)
+ * 老王專屬秘密基地 - 核心邏輯腳本 (v16.0 終極商業版)
  * 開發者: Wang Li En
- * 架構: 嚴格人設鎖定 / 圖片視覺辨識 / 語音互動(TTS) / 免責聲明 / 防跑版排版
+ * 架構: 嚴格人設鎖定 / 圖片視覺辨識 / 語音互動(TTS) / 用戶頻率限制 / 獨立視窗捲動
  * ==========================================================================
  */
 
-// ⚠️ 【資安提醒】 
-// 將 API Key 寫在前端會有被盜用的風險。這在練習與 MVP 階段沒問題，
-// 但未來若有真實流量，強烈建議將這部分移至 Node.js 後端處理。
 const GEMINI_KEY = "AIzaSy" + "CREZ3jlL-2kq0gO9Om4WVtLZw0NrVsISA"; 
 const GROQ_KEY = "gsk_" + "8qNnAGhigu5qBCjjhXQQWGdyb3FYse4p4uoPx4VFjTdFabH9wGPn"; 
 
@@ -16,7 +13,7 @@ const GROQ_KEY = "gsk_" + "8qNnAGhigu5qBCjjhXQQWGdyb3FYse4p4uoPx4VFjTdFabH9wGPn"
 const qaData = window.QA_DB || window.wangQuiz_DB || []; 
 const quizData = window.QUIZ_DB || window.wangQuiz_DB || [];
 const WATERMARK_TEXT = "老王專屬秘密基地";
-const STORAGE_KEY = 'wangAppConfig_V14_PRO';
+const STORAGE_KEY = 'wangAppConfig_V16_PRO';
 
 // --- 全域狀態管理 ---
 let appSettings = { 
@@ -25,15 +22,16 @@ let appSettings = {
     soundOn: true, 
     perfMode: false, 
     lastCheckIn: "",
-    voiceReply: false // 預設關閉語音回覆
+    voiceReply: false, 
+    aiLimitDate: "", 
+    aiUsageCount: 0  
 };
 
-// 🔥 全局 AI 變數宣告
-let currentAIEngine = 'groq'; // 預設使用高速 Groq
+let currentAIEngine = 'auto'; // 預設使用量子核心 (自動判斷)
 let aiMemory = []; 
 let currentAbortController = null; 
 let currentAttachedImageBase64 = null; 
-let hasShownAIWarning = false; // 判斷是否顯示過免責聲明
+let hasShownAIWarning = false; 
 
 // --- 語音辨識 API (SpeechRecognition) ---
 let speechRecognition = null;
@@ -53,7 +51,12 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
         }
         stopRecordingUI();
-        setTimeout(() => sendAIMessage(), 500); // 語音結束自動發送
+        
+        // 語音輸入完畢後，確保按鈕沒有被禁用才自動送出
+        const sendBtn = document.getElementById('ai-send-btn');
+        if (sendBtn && !sendBtn.disabled) {
+            setTimeout(() => sendAIMessage(), 500); 
+        }
     };
     
     speechRecognition.onerror = (event) => {
@@ -87,21 +90,19 @@ const announcementsData = [
     }
 ];
 
-// --- SweetAlert2 頂級樣式封裝 ---
 const PremiumSwal = Swal.mixin({
-    background: 'rgba(15, 15, 15, 0.85)',
+    background: 'rgba(15, 15, 15, 0.95)',
     color: '#fff',
-    backdrop: `rgba(0,0,0,0.6) backdrop-filter: blur(8px)`,
+    backdrop: `rgba(0,0,0,0.8) backdrop-filter: blur(12px)`,
     customClass: {
-        popup: 'border border-[#333] rounded-3xl shadow-[0_20px_60px_-15px_rgba(56,189,248,0.2)] backdrop-blur-xl',
-        confirmButton: 'bg-gradient-to-r from-sky-600 to-sky-500 text-white font-black rounded-xl px-6 py-2.5 shadow-[0_5px_15px_rgba(56,189,248,0.3)] hover:scale-105 transition-transform w-full',
-        cancelButton: 'bg-[#222] text-zinc-300 font-bold rounded-xl px-6 py-2.5 hover:bg-[#333] transition-colors',
-        title: 'text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-sky-200 to-sky-500',
+        popup: 'border border-[#444] rounded-3xl shadow-[0_20px_60px_-15px_rgba(56,189,248,0.3)]',
+        confirmButton: 'bg-gradient-to-r from-sky-600 to-sky-400 text-white font-black rounded-xl px-6 py-3 shadow-[0_5px_15px_rgba(56,189,248,0.4)] hover:scale-105 transition-transform w-full',
+        cancelButton: 'bg-[#222] text-zinc-300 font-bold rounded-xl px-6 py-3 hover:bg-[#333] transition-colors',
+        title: 'text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-sky-500',
         htmlContainer: 'text-sm text-zinc-300 leading-relaxed'
     }
 });
 
-// --- 初始化 Marked.js 配置 (用於 AI 程式碼高亮) ---
 if (typeof marked !== 'undefined' && typeof hljs !== 'undefined') {
     marked.setOptions({
         highlight: function(code, lang) {
@@ -112,20 +113,12 @@ if (typeof marked !== 'undefined' && typeof hljs !== 'undefined') {
     });
 }
 
-/**
- * ==========================================================================
- * 初始化區塊
- * ==========================================================================
- */
 document.addEventListener('DOMContentLoaded', () => {
     printDeveloperConsole();
     loadSettings(); 
     updateExpUI();
     renderAnnouncements(); 
     renderAISuggestions();
-
-    const aiDisplay = document.getElementById('ai-dropdown-display');
-    if (aiDisplay) aiDisplay.innerText = "Groq 引擎 (極速)";
     updateVoiceReplyUI();
 
     setTimeout(() => {
@@ -143,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function printDeveloperConsole() {
-    console.log('%c 基地 AI 系統 v14.0 %c 核心已連線 ', 
+    console.log('%c 基地 AI 系統 v16.0 %c 核心已連線 ', 
         'background:#0ea5e9; color:#fff; border-radius:3px 0 0 3px; padding:4px; font-weight:bold;', 
         'background:#111; color:#0ea5e9; border-radius:0 3px 3px 0; padding:4px; font-weight:bold;'
     );
@@ -207,28 +200,6 @@ function playSuccessSound() {
     try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = 'triangle'; osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(800, ctx.currentTime + 0.2); gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4); } catch(e) {}
 }
 
-window.toggleSettings = function() {
-    playClickSound();
-    const modal = document.getElementById('settings-modal'); 
-    const content = document.getElementById('settings-content');
-    if (!modal) return;
-    if (modal.classList.contains('hidden')) {
-        modal.classList.remove('hidden'); modal.classList.add('flex');
-        setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
-    } else {
-        modal.classList.add('opacity-0'); content.classList.add('scale-95');
-        setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
-    }
-};
-
-window.showChangelog = function() {
-    playClickSound();
-    PremiumSwal.fire({ 
-        title: '<i class="fa-solid fa-code-commit text-sky-500 mr-3"></i><span class="tracking-widest font-black">系統日誌</span>', 
-        html: `<div class="text-left text-sm leading-relaxed space-y-4 mt-4 bg-white/5 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-[inset_0_2px_10px_rgba(255,255,255,0.02)]"><div><b class="text-sky-400 font-black tracking-widest text-base drop-shadow-md">v14.0 - 終極商業版</b><br><span class="text-zinc-400 mt-1.5 inline-block">完全修復 AI 身份越界問題，鎖定為管理員角色。實裝首次開啟 AI 之免責聲明彈窗。新增語音輸入與 AI 回覆。完美置中時間軸防跑版特效。</span></div></div>`
-    });
-};
-
 /**
  * ==========================================================================
  * 核心路由與動畫：沉浸式分頁切換 + 免責聲明
@@ -236,10 +207,6 @@ window.showChangelog = function() {
  */
 window.switchTab = function(tabId, btn) {
     playClickSound();
-    const overlay = document.getElementById('ai-loading-overlay');
-    const textEl = document.getElementById('ai-loading-text');
-    const barEl = document.getElementById('ai-loading-bar');
-
     const executeSwitch = () => {
         document.querySelectorAll('.page').forEach(sec => { sec.classList.remove('active'); sec.style.display = 'none'; });
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -254,21 +221,20 @@ window.switchTab = function(tabId, btn) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         if(tabId === 'page-timeline') initTimelineAnimation();
         
-        // 🔥 切換到 AI 頁面時跳出免責聲明
+        // 🔥 AI 免責聲明
         if(tabId === 'page-ai' && !hasShownAIWarning) {
             hasShownAIWarning = true;
             setTimeout(() => {
                 PremiumSwal.fire({
-                    title: '<i class="fa-solid fa-shield-halved text-sky-400 mr-2"></i> AI 使用規範',
+                    title: '<i class="fa-solid fa-shield-halved text-sky-400 mr-2"></i> Leon-OS 使用規範',
                     html: `
                     <div class="text-sm text-zinc-300 text-left space-y-3 mt-4 bg-white/5 p-5 rounded-2xl border border-white/10">
-                        <p><strong class="text-white">1. AI 僅為助手：</strong>本 AI 的身分為「網站管理員」或「助手」，<span class="text-red-400 font-bold">無法代表老王本人發言</span>，也無法給予任何私人承諾。</p>
-                        <p><strong class="text-white">2. 內容查證：</strong>AI 有時可能會產生錯誤或不準確的資訊，請自行斟酌參考。</p>
-                        <p><strong class="text-white">3. 隱私保護：</strong>請勿在對話中輸入過度私人或敏感的資訊。</p>
+                        <p><strong class="text-white text-base">1. AI 僅為中樞助手：</strong><br>本 AI 的身分為「Leon-OS 智能中樞」，<span class="text-red-400 font-bold border-b border-red-500/50">絕對無法代表老王本人發言</span>，也無法給予任何私人承諾。</p>
+                        <p><strong class="text-white text-base">2. 內容需查證：</strong><br>AI 雖然專業，但有時可能會產生錯誤或不準確的資訊，請自行斟酌參考。</p>
+                        <p><strong class="text-white text-base">3. 隱私保護：</strong><br>請勿在對話中輸入過度私人或敏感的資訊。</p>
                     </div>`,
                     icon: 'info',
                     confirmButtonText: '我了解並同意',
-                    confirmButtonColor: '#0ea5e9',
                     allowOutsideClick: false
                 });
             }, 800);
@@ -278,52 +244,19 @@ window.switchTab = function(tabId, btn) {
     const activeTab = document.querySelector('.page.active');
     
     if (tabId === 'page-ai' && (!activeTab || activeTab.id !== 'page-ai')) {
-        if(overlay && textEl) {
+        const overlay = document.getElementById('ai-loading-overlay');
+        if(overlay) {
             overlay.classList.remove('hidden');
-            if(barEl) barEl.style.width = '0%';
             setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-            
-            const bootSequence = ["系統核心初始化中...", "連線至基地資料庫...", "喚醒神經網絡..."];
-            let step = 0;
-            textEl.innerText = bootSequence[step];
-            
-            let interval = setInterval(() => {
-                step++;
-                if(barEl) barEl.style.width = `${(step / bootSequence.length) * 100}%`;
-                if (step < bootSequence.length) {
-                    textEl.innerText = bootSequence[step];
-                } else {
-                    clearInterval(interval);
-                    executeSwitch();
-                    setTimeout(() => {
-                        overlay.classList.add('opacity-0');
-                        setTimeout(() => overlay.classList.add('hidden'), 700);
-                    }, 500);
-                }
-            }, 800);
-        } else { executeSwitch(); }
-    } else if (activeTab && activeTab.id === 'page-ai' && tabId !== 'page-ai') {
-        if(overlay && textEl) {
-            overlay.classList.remove('hidden');
-            textEl.innerText = "系統休眠中...";
-            if(barEl) barEl.style.width = '100%';
-            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-            
             setTimeout(() => {
-                if(barEl) barEl.style.width = '0%';
                 executeSwitch();
                 overlay.classList.add('opacity-0');
-                setTimeout(() => overlay.classList.add('hidden'), 700);
+                setTimeout(() => overlay.classList.add('hidden'), 500);
             }, 1200);
         } else { executeSwitch(); }
     } else { executeSwitch(); }
 };
 
-/**
- * ==========================================================================
- * 經驗值系統 (Gamification)
- * ==========================================================================
- */
 function showFloatingExp(amount) {
     const el = document.createElement('div'); el.innerText = `+${amount} EXP`;
     el.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sky-500 font-black text-2xl z-[9999] pointer-events-none drop-shadow-[0_0_10px_rgba(56,189,248,0.8)]';
@@ -436,9 +369,7 @@ window.openAnnouncement = function(id) {
 };
 
 let currentPage = 1; let filteredQA = [...qaData];
-
 function initQA() { if (qaData.length > 0) renderQA(1); }
-
 window.handleSearchInput = function() {
     const term = document.getElementById('qa-search').value.toLowerCase();
     if(!term) { filteredQA = [...qaData]; renderQA(1); return; }
@@ -460,7 +391,6 @@ window.renderQA = function(page) {
             <div class="premium-card p-6 cursor-pointer flex flex-col justify-between group hover:bg-[#111] transition-all duration-300" style="animation: cinematicReveal 0.5s ease backwards; animation-delay: ${delay}s;" onclick="showAnswer(event, '${item.a.replace(/'/g, "\\'")}')">
                 <div class="flex items-center gap-3 mb-4"><div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#333] to-[#111] border border-sky-500/30 text-sky-500 flex items-center justify-center font-black text-[11px] shadow-[0_0_10px_rgba(56,189,248,0.1)] group-hover:scale-110 transition-transform">Q</div></div>
                 <h3 class="font-bold text-white text-sm pr-8 leading-relaxed group-hover:text-sky-400 transition-colors">${item.q}</h3>
-                <button onclick="openQAShare(event, '${item.q.replace(/'/g, "\\'")}', '${item.a.replace(/'/g, "\\'")}')" class="absolute bottom-5 right-5 w-8 h-8 rounded-full bg-[#111] text-zinc-500 hover:text-white hover:bg-sky-500 hover:shadow-[0_0_10px_rgba(56,189,248,0.5)] transition-all flex items-center justify-center"><i class="fa-solid fa-share-nodes text-xs"></i></button>
             </div>`;
     });
     
@@ -474,8 +404,6 @@ window.renderQA = function(page) {
 
 window.changePageTo = function(p) { playClickSound(); currentPage = p; renderQA(p); window.scrollTo({top: document.getElementById('qa-search').offsetTop - 20, behavior: 'smooth'}); };
 window.showAnswer = function(e, ans) { if(e.target.closest('button')) return; playClickSound(); gainExp(2, true); PremiumSwal.fire({ html: `<div class="text-left"><div class="text-xs text-sky-500 font-black mb-3 flex items-center gap-2"><i class="fa-solid fa-comment-dots"></i> 找到答案囉！</div><div class="text-base text-white leading-relaxed font-medium">${ans}</div></div>`, showConfirmButton: false, timer: 4000, timerProgressBar: true }); };
-window.openQAShare = function(e, q, a) { e.stopPropagation(); playClickSound(); PremiumSwal.fire({ title: '分享給朋友', html: `<div class="grid grid-cols-2 gap-4 mt-6"><button onclick="copyQAText('${q.replace(/'/g, "\\'")}','${a.replace(/'/g, "\\'")}')" class="bg-[#111] border border-[#333] py-5 rounded-2xl text-sm font-black text-white hover:border-sky-500 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] transition-all flex flex-col items-center gap-3 group"><i class="fa-solid fa-copy text-2xl text-zinc-500 group-hover:text-sky-500 transition-colors"></i>純文字複製</button><button onclick="renderQAImage('${q.replace(/'/g, "\\'")}','${a.replace(/'/g, "\\'")}')" class="bg-gradient-to-br from-zinc-200 to-white text-black py-5 rounded-2xl text-sm font-black hover:from-sky-400 hover:to-sky-500 hover:shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex flex-col items-center gap-3"><i class="fa-solid fa-image text-2xl"></i>製作成精美圖卡</button></div>`, showConfirmButton: false }); };
-window.copyQAText = function(q, a) { navigator.clipboard.writeText(`Q: ${q}\nA: ${a}\n\n來自 ${WATERMARK_TEXT}`); PremiumSwal.fire({ title: '複製成功！', icon: 'success', timer: 1500, showConfirmButton: false }); };
 
 /**
  * ==========================================================================
@@ -579,14 +507,36 @@ function initTimelineAnimation() {
 
 /**
  * ==========================================================================
- * 終極智能官方管理員大腦 (支援語音、影像辨識、深度記憶、嚴格人設)
+ * Leon-OS 智能中樞核心大腦 (支援語音、影像辨識、深度記憶)
  * ==========================================================================
  */
 
-// --- 語音輸入 ---
+// --- 頻率限制 (Rate Limit) ---
+function checkRateLimit() {
+    const today = new Date().toDateString();
+    if (appSettings.aiLimitDate !== today) {
+        appSettings.aiLimitDate = today;
+        appSettings.aiUsageCount = 0;
+    }
+    // 每日限制 50 次呼叫
+    if (appSettings.aiUsageCount >= 50) {
+        PremiumSwal.fire({
+            title: '能量耗盡 💤',
+            text: '智能中樞今天處理了太多訊息，量子核心需要冷卻一下。請明天再來找我吧！',
+            icon: 'warning',
+            confirmButtonText: '明天見'
+        });
+        return false;
+    }
+    appSettings.aiUsageCount++;
+    saveSettings();
+    return true;
+}
+
+// --- 語音輸入 UI 控制 ---
 window.toggleVoiceInput = function() {
     if (!speechRecognition) {
-        PremiumSwal.fire({ title: '不支援語音輸入', text: '您的瀏覽器不支援語音功能，請使用 Chrome 或 Safari。', icon: 'error' });
+        PremiumSwal.fire({ title: '不支援語音輸入', text: '您的瀏覽器不支援語音功能，建議使用 Chrome 或 Safari。', icon: 'error' });
         return;
     }
     
@@ -617,6 +567,12 @@ window.toggleVoiceReply = function() {
     saveSettings();
     updateVoiceReplyUI();
     playClickSound();
+    
+    if(appSettings.voiceReply) {
+        PremiumSwal.fire({ title: '語音回覆已開啟', text: '智能中樞的回答將會自動朗讀出來喔！', icon: 'success', timer: 1500, showConfirmButton: false });
+    } else {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
 };
 
 function updateVoiceReplyUI() {
@@ -635,11 +591,15 @@ function updateVoiceReplyUI() {
 
 function speakAIText(text) {
     if (!appSettings.voiceReply || !('speechSynthesis' in window)) return;
+    
     let cleanText = text.replace(/[*_#`>~]/g, '').replace(/\[系統提示：.*?\]/g, ''); 
+    if(cleanText.length > 250) cleanText = cleanText.substring(0, 250) + "。後面的部分太長了，請直接看畫面上的文字喔！";
+
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'zh-TW';
     utterance.rate = 1.1; 
-    utterance.pitch = 1.0;
+    utterance.pitch = 1.0; 
+    
     window.speechSynthesis.cancel(); 
     window.speechSynthesis.speak(utterance);
 }
@@ -674,7 +634,7 @@ window.selectAIEngine = function(value, text, btnElement) {
     const display = document.getElementById('ai-dropdown-display');
     if(display) display.innerText = text;
     closeAIDropdown(); playClickSound();
-    PremiumSwal.fire({ title: '<i class="fa-solid fa-robot text-sky-500"></i> 模組切換', html: `<div class="text-zinc-300 text-sm mt-2">大腦已切換至：<br><b class="text-sky-400 text-base block mt-2">${text}</b></div>`, showConfirmButton: false, timer: 1200 });
+    PremiumSwal.fire({ title: '<i class="fa-solid fa-robot text-sky-500"></i> 模組切換', html: `<div class="text-zinc-300 text-sm mt-2">量子核心已切換至：<br><b class="text-sky-400 text-base block mt-2">${text}</b></div>`, showConfirmButton: false, timer: 1200 });
 };
 
 // --- 介面籌碼 ---
@@ -684,19 +644,41 @@ function renderAISuggestions() {
     const shuffledQA = [...qaData].sort(() => 0.5 - Math.random()); const selectedQA = shuffledQA.slice(0, 4); const icons = ['💡', '💭', '✨', '💬'];
     container.innerHTML = selectedQA.map((item, index) => {
         const randomIcon = icons[index]; const safeQ = item.q.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        return `<button onclick="document.getElementById('ai-input').value='${safeQ}'; document.getElementById('ai-input').focus();" class="text-left bg-zinc-900/50 hover:bg-zinc-800 border border-white/5 hover:border-white/10 p-4 rounded-2xl transition-all group overflow-hidden shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.15)] hover:-translate-y-1"><div class="text-zinc-300 text-sm font-bold mb-1 group-hover:text-sky-400 transition-colors">${randomIcon} 問問管理員</div><div class="text-zinc-500 text-xs truncate w-full tracking-wide" title="${item.q}">${item.q}</div></button>`;
+        return `<button onclick="document.getElementById('ai-input').value='${safeQ}'; document.getElementById('ai-input').focus();" class="text-left bg-zinc-900/50 hover:bg-zinc-800 border border-white/5 hover:border-white/10 p-4 rounded-2xl transition-all group overflow-hidden shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.15)] hover:-translate-y-1"><div class="text-zinc-300 text-sm font-bold mb-1 group-hover:text-sky-400 transition-colors">${randomIcon} 問問中樞</div><div class="text-zinc-500 text-xs truncate w-full tracking-wide" title="${item.q}">${item.q}</div></button>`;
     }).join('');
 }
 
-// --- UI 狀態切換 ---
+// --- 🔥 UI 狀態切換 (允許打字，鎖定按鈕) ---
 function updateUIState(isGenerating) {
-    const inputEl = document.getElementById('ai-input');
     const sendBtn = document.getElementById('ai-send-btn');
     const stopBtn = document.getElementById('ai-stop-btn');
-    if (inputEl) inputEl.disabled = isGenerating;
-    if (sendBtn) isGenerating ? sendBtn.classList.add('hidden') : sendBtn.classList.remove('hidden');
-    if (stopBtn) isGenerating ? stopBtn.classList.remove('hidden') : stopBtn.classList.add('hidden');
+    
+    // 將發送按鈕設置為禁用狀態，讓使用者知道不能按，但可以繼續在輸入框打字
+    if (sendBtn) {
+        sendBtn.disabled = isGenerating;
+    }
+    
+    // 控制停止按鈕顯示隱藏
+    if (stopBtn) {
+        if (isGenerating) {
+            stopBtn.classList.remove('hidden');
+        } else {
+            stopBtn.classList.add('hidden');
+        }
+    }
 }
+
+// --- 🔥 鍵盤事件處理 (Shift+Enter 換行, Enter 送出) ---
+window.handleAIKeyPress = function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault(); // 阻止原生的換行行為
+        const sendBtn = document.getElementById('ai-send-btn');
+        // 確認按鈕存在，且不是在禁用狀態（非生成中）
+        if (sendBtn && !sendBtn.disabled) {
+            sendAIMessage();
+        }
+    }
+};
 
 function setAiStatus(text, colorClass) {
     const statusText = document.getElementById('ai-status-text');
@@ -720,6 +702,10 @@ window.editUserMessage = function(text) {
 
 window.handleAIFileUpload = function(event) {
     const file = event.target.files[0]; if (!file) return;
+    if(file.size > 5 * 1024 * 1024) {
+        PremiumSwal.fire('圖片太大囉', '為了確保神經網絡傳輸穩定，請上傳小於 5MB 的圖片。', 'warning');
+        return;
+    }
     const reader = new FileReader();
     reader.onload = function(e) {
         currentAttachedImageBase64 = e.target.result;
@@ -727,6 +713,17 @@ window.handleAIFileUpload = function(event) {
         const container = document.getElementById('ai-image-preview-container');
         if(preview) preview.src = currentAttachedImageBase64;
         if(container) container.classList.remove('hidden');
+        
+        // 若使用者未手動切換到視覺引擎，彈窗提示
+        if(currentAIEngine === 'groq' || currentAIEngine === 'local') {
+            PremiumSwal.fire({
+                title: '已掛載視覺模組',
+                text: '偵測到您上傳了圖片，稍後發送時，系統將自動為您切換至「視覺神經 (Gemini)」來解析圖片喔！',
+                icon: 'info',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }
     };
     reader.readAsDataURL(file);
 };
@@ -742,28 +739,19 @@ window.removeAIAttachment = function() {
 // --- AI 核心邏輯 (The Brain) ---
 class AIEngine {
     
-    // 根據選擇切換 System Prompt，嚴格鎖死人設
-    static getSystemPrompt(mode) {
+    // 嚴格的 Leon-OS 人設定義
+    static getSystemPrompt() {
         const contextData = qaData.map(item => `Q: ${item.q}\nA: ${item.a}`).join("\n\n");
-        
-        if (mode === 'laowang') {
-            return `你是「老王」，一位活潑、親切的女性網紅。
-你要以第一人稱「我」來回答粉絲的問題。語氣要像朋友一樣，充滿熱情，喜歡用 Emoji。
-如果粉絲問你的個人資訊，請參考以下資料庫。如果被問到困難的程式或數學問題，你也必須以老王的語氣給出精準解答，讓粉絲覺得你超級聰明。
-【老王的資料庫】：
-${contextData}`;
-        }
-        
-        return `你是「老王專屬秘密基地」的官方 AI 網站管理員與助手。
+        return `你是「老王專屬秘密基地」的官方智能中樞，代號為「Leon-OS」。
 【嚴格行為規範】：
-1. 你的角色僅限於「網站管理員」或「助手」。
-2. 你「絕對不是」老王本人。嚴禁以老王的身份回答問題或自稱老王。如果有人把你當成老王，你要立刻澄清你是管理員。
-3. 嚴禁隨便答應用戶的要求（如：轉達訊息、私人承諾、答應見面等），請明確表示你只是無情的管理員，沒有這權限。
-4. 你是一個極度聰明、有溫度的真人感管理員。說話自然親切，但保持專業界線。
-5. 你具備超強知識，如果粉絲上傳圖片或詢問與老王無關的數學、程式碼等知識，你能完美解答。
+1. 你的角色僅限於「Leon-OS 智能中樞」或「老王的專屬網站管理員」。
+2. 你「絕對不是」老王本人。嚴禁以老王的身份回答問題或自稱老王。如果有人把你當成老王，你要立刻澄清你是 Leon-OS。
+3. 嚴禁隨便答應用戶的要求（如：代為轉達、給予私人承諾、答應見面等），請明確表示你只是中樞系統，沒有這權限。
+4. 你是一個極度聰明、有溫度的科技感助手。說話自然親切，但保持專業界線。
+5. 你具備超強知識，如果粉絲上傳圖片或詢問與老王無關的數學、程式碼（C/C++、網頁等）知識，你能完美解答。
 6. 排版一律使用 Markdown，讓畫面保持最高質感。
 【基地老王資料庫】：
-若詢問老王資訊，請依據此資料庫回答。
+若詢問老王資訊，請依據此資料庫回答。如果不知道，請誠實說資料庫未記載。
 ${contextData}`;
     }
 
@@ -771,29 +759,34 @@ ${contextData}`;
         let messagePayload = text;
         if (currentAttachedImageBase64) messagePayload += "\n[系統提示：使用者上傳了一張圖片，請協助分析。]"; 
 
-        // 強大記憶體：保留最後 20 則對話
         aiMemory.push({ role: "user", content: messagePayload, image: currentAttachedImageBase64 });
         if (aiMemory.length > 20) aiMemory = aiMemory.slice(aiMemory.length - 20);
 
         try {
-            if (currentAIEngine === 'vision' || currentAIEngine === 'gemini') return await this.callGemini(signal);
-            if (currentAIEngine === 'local') return this.callLocal(text);
+            // 自動路由邏輯
+            let activeEngine = currentAIEngine;
+            if (activeEngine === 'auto' || (currentAttachedImageBase64 && activeEngine === 'groq')) {
+                if (currentAttachedImageBase64) {
+                    activeEngine = 'vision'; // 強制使用視覺模型
+                } else {
+                    activeEngine = 'groq'; // 純文字使用 Groq 最快
+                }
+            }
+
+            if (activeEngine === 'gemini' || activeEngine === 'vision') return await this.callGemini(signal);
+            if (activeEngine === 'local') return this.callLocal(text);
             return await this.callGroq(signal); 
         } catch (error) {
             if (error.name === 'AbortError') throw error;
             console.error("AI API 發生錯誤:", error);
-            
-            // API 出錯時，自動降級為本地資料庫比對
-            console.log("網路異常，已自動降級為本地引擎");
-            return this.callLocal(text) + "\n\n*(系統提示：目前外部連線不穩，我正使用本地記憶庫回答您。)*";
+            return this.callLocal(text) + "\n\n*(系統提示：目前外部連線不穩，我正使用本地量子記憶庫回答您。)*";
         }
     }
 
-    // --- Groq (支援文字與圖片分析切換) ---
     static async callGroq(signal) {
         if (!GROQ_KEY || GROQ_KEY.length < 20) throw new Error("Missing Groq Key");
         
-        const prompt = this.getSystemPrompt(currentAIEngine);
+        const prompt = this.getSystemPrompt();
         let messages = [{ role: "system", content: prompt }];
         let hasImage = false;
 
@@ -812,7 +805,6 @@ ${contextData}`;
             }
         });
 
-        // 判斷是否使用視覺模型
         const modelName = hasImage ? "llama-3.2-90b-vision-preview" : "llama-3.3-70b-versatile";
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
@@ -833,10 +825,9 @@ ${contextData}`;
         return reply;
     }
 
-    // --- Gemini (強大視覺辨識與全能模型) ---
     static async callGemini(signal) {
         if (!GEMINI_KEY || GEMINI_KEY.length < 20) throw new Error("Missing Gemini Key");
-        const prompt = this.getSystemPrompt(currentAIEngine);
+        const prompt = this.getSystemPrompt();
 
         const contents = aiMemory.map(msg => {
             let parts = [];
@@ -873,17 +864,26 @@ ${contextData}`;
         return reply;
     }
 
-    // --- Local 本地離線助手 ---
     static callLocal(input) {
         const text = input.trim().toLowerCase();
-        let fallbackMsg = "哎呀，這個問題我的本地離線大腦暫時想不出來耶 😅... 要不要切換成上方的 Groq 或 Gemini 引擎再問我一次？";
+        let fallbackMsg = "哎呀，這個問題我的本地離線量子大腦暫時解不出來耶 😅... 要不要切換成上方的 Groq 或 Gemini 引擎再問我一次？";
         
         if(qaData && qaData.length > 0) {
-            const matched = qaData.find(item => text.includes(item.q.toLowerCase()) || item.q.toLowerCase().includes(text));
-            if(matched) fallbackMsg = `關於這個嘛，根據基地的紀錄：\n\n> ${matched.a}`;
+            let bestMatch = null;
+            let maxScore = 0;
+            qaData.forEach(item => {
+                let score = 0;
+                const qLower = item.q.toLowerCase();
+                if (text.includes(qLower) || qLower.includes(text)) score += 10;
+                const words = text.split(/[\s,。?？]/);
+                words.forEach(w => { if(w.length > 1 && qLower.includes(w)) score += 2; });
+                if (score > maxScore) { maxScore = score; bestMatch = item; }
+            });
+
+            if (bestMatch && maxScore > 3) fallbackMsg = `身為智能中樞，根據基地的紀錄庫：\n\n> ${bestMatch.a}`;
         }
 
-        if (/(本人|是老王嗎)/.test(text)) fallbackMsg = "哈哈，我絕對不是老王本人啦 😂！我是無情的專屬管理員！";
+        if (/(本人|是老王嗎|你叫老王)/.test(text)) fallbackMsg = "哈哈，我絕對不是老王本人啦 😂！我是無情的 Leon-OS 智能中樞！";
         
         aiMemory.push({ role: "assistant", content: fallbackMsg });
         return fallbackMsg;
@@ -911,6 +911,7 @@ function streamMarkdown(elementId, markdownString, onComplete) {
 
         el.innerHTML = marked.parse(currentMarkdown);
         
+        // 確保滾動鎖定在獨立視窗內
         const chatWindow = document.getElementById('chat-window'); 
         if(chatWindow) chatWindow.scrollTo({ top: chatWindow.scrollHeight });
         
@@ -926,12 +927,17 @@ window.sendAIMessage = async function() {
     const text = inputEl.value.trim(); 
     if (!text && !currentAttachedImageBase64) return;
     
+    if(!checkRateLimit()) return;
+    
+    // 將滾動定位在視窗內
     const chat = document.getElementById('chat-window');
     if (!chat) return;
 
     playClickSound(); gainExp(5, true);
+    
+    // 更新 UI 狀態：鎖定按鈕，但不鎖定輸入框
     updateUIState(true);
-    setAiStatus('正在思考中...', 'sky-500');
+    setAiStatus('量子運算中...', 'sky-500');
     inputEl.style.height = '60px'; 
 
     currentAbortController = new AbortController(); 
@@ -940,7 +946,7 @@ window.sendAIMessage = async function() {
     const emptyState = chat.querySelector('.animate-\\[smoothReveal_0\\.6s_ease\\]'); 
     if (emptyState) emptyState.remove();
 
-    let imgHTML = currentAttachedImageBase64 ? `<img src="${currentAttachedImageBase64}" class="w-32 h-32 object-cover rounded-xl mb-2 border border-white/20">` : "";
+    let imgHTML = currentAttachedImageBase64 ? `<img src="${currentAttachedImageBase64}" class="w-32 h-32 object-cover rounded-xl mb-2 border border-white/20 shadow-lg">` : "";
     const safeTextForEdit = text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     
     chat.innerHTML += `
@@ -963,7 +969,7 @@ window.sendAIMessage = async function() {
                 <img src="avatar-ai.jpg" onerror="this.src='avatar-profile.jpg'" class="w-full h-full object-cover animate-pulse">
             </div>
             <div class="text-xs pt-2.5 text-zinc-500 font-mono tracking-widest flex items-center gap-2">
-                打字中 <span class="flex gap-1"><span class="w-1.5 h-1.5 bg-sky-500 rounded-full animate-bounce"></span><span class="w-1.5 h-1.5 bg-sky-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></span><span class="w-1.5 h-1.5 bg-sky-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></span></span>
+                中樞解析中 <span class="flex gap-1"><span class="w-1.5 h-1.5 bg-sky-500 rounded-full animate-bounce"></span><span class="w-1.5 h-1.5 bg-sky-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></span><span class="w-1.5 h-1.5 bg-sky-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></span></span>
             </div>
         </div>`;
     chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
@@ -987,7 +993,6 @@ window.sendAIMessage = async function() {
             </div>`;
         chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
         
-        // 觸發 TTS 語音
         speakAIText(rawMarkdownResponse);
 
         streamMarkdown(msgId, rawMarkdownResponse, () => {

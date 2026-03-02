@@ -2,7 +2,7 @@
 <html lang="zh-TW" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#030303">
     
     <title>老王專屬秘密基地</title>
@@ -88,7 +88,6 @@
         .page.active { display: block; animation: smoothReveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         @keyframes smoothReveal { 0% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.98); } 100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
         
-        /* 🔥 修復警告：加上標準的 background-clip */
         .text-gradient-blue { 
             background: linear-gradient(135deg, #bae6fd 0%, #38bdf8 50%, #0284c7 100%); 
             -webkit-background-clip: text; 
@@ -128,7 +127,7 @@
         .recording { color: #ef4444 !important; animation: pulse-red 1.5s infinite; }
     </style>
 </head>
-<body class="pb-36 pt-6">
+<body class="pb-[100px] pt-6">
 
     <div id="splash" class="fixed inset-0 z-[999] bg-[#030303] flex flex-col items-center justify-center transition-all duration-700">
         <div class="relative w-32 h-32 mb-10">
@@ -147,7 +146,7 @@
         <div class="ambient-orb orb-1"></div><div class="ambient-orb orb-2"></div><div class="ambient-orb orb-3"></div>
     </div>
 
-    <header class="max-w-3xl mx-auto px-5 mb-10 flex justify-between items-center relative z-20">
+    <header class="max-w-3xl mx-auto px-5 mb-6 flex justify-between items-center relative z-20">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-[18px] bg-sky-500/10 backdrop-blur-md flex items-center justify-center border border-sky-500/30 shadow-[0_0_20px_rgba(56,189,248,0.2)] transform -rotate-6 overflow-hidden">
                 <img src="avatar-main.jpg" onerror="this.src='https://ui-avatars.com/api/?name=王&background=000&color=fff'" alt="Logo" class="w-full h-full object-cover p-1 rounded-[16px]">
@@ -278,9 +277,9 @@
             <div id="announcements-list" class="space-y-6"></div>
         </section>
         
-        <section id="page-ai" class="page relative h-[calc(100dvh-120px)] -mx-5 px-0 mt-2">
+        <section id="page-ai" class="page relative h-[calc(100dvh-140px)] -mx-5 px-0 mt-2">
             
-            <div id="ai-loading-overlay" class="absolute inset-0 z-50 bg-[#030303]/90 backdrop-blur-2xl flex flex-col items-center justify-center hidden transition-opacity duration-500 opacity-0">
+            <div id="ai-loading-overlay" class="absolute inset-0 z-50 bg-[#030303]/95 backdrop-blur-2xl flex flex-col items-center justify-center hidden transition-opacity duration-500 opacity-0 rounded-[40px] mx-5">
                 <div class="relative w-24 h-24 mb-8">
                     <div class="absolute inset-0 rounded-full border-t-4 border-l-4 border-sky-400 animate-[spin_1.5s_linear_infinite] shadow-[0_0_30px_rgba(56,189,248,0.5)]"></div>
                     <div class="absolute inset-3 rounded-full border-b-4 border-r-4 border-blue-600 animate-[spin_1s_reverse_infinite] shadow-[0_0_20px_rgba(37,99,235,0.5)]"></div>
@@ -292,7 +291,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col h-full relative bg-[#0a0a0a]/90 backdrop-blur-xl overflow-hidden rounded-t-[40px] border-t border-x border-white/10 shadow-[0_-20px_60px_rgba(0,0,0,0.8)]">
+            <div class="flex flex-col h-full relative bg-[#0a0a0a]/90 backdrop-blur-xl overflow-hidden rounded-[40px] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.6)] mx-5">
                 
                 <div id="chat-window" class="flex-1 overflow-y-auto px-4 md:px-8 pt-8 pb-[180px] space-y-6 no-scrollbar scroll-smooth relative z-10 w-full max-w-3xl mx-auto">
                     
@@ -300,17 +299,17 @@
                         <div class="relative w-28 h-28 mb-6 group cursor-pointer hover:scale-105 transition-all duration-300" onclick="triggerAILoading()" title="點擊重新載入AI">
                             <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-sky-400 to-sky-200 rounded-full blur-xl opacity-60 group-hover:opacity-100 animate-[spin_4s_linear_infinite] transition-all duration-500"></div>
                             <div class="relative w-full h-full rounded-full border-2 border-white/20 p-1.5 bg-[#030303] shadow-[0_0_30px_rgba(0,0,0,0.8)] overflow-hidden">
-                                <img src="avatar-ai.jpg" onerror="this.src='https://ui-avatars.com/api/?name=AI&background=000&color=fff'" alt="小幫手" class="w-full h-full rounded-full object-cover">
+                                <img src="avatar-ai.jpg" onerror="this.src='https://ui-avatars.com/api/?name=AI&background=000&color=fff'" alt="Leon-OS" class="w-full h-full rounded-full object-cover">
                             </div>
                         </div>
 
-                        <h3 class="text-xl font-black tracking-[0.2em] mb-3 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">基地官方管理員</h3>
-                        <p class="text-xs text-sky-400 font-mono tracking-wide mb-8 bg-sky-500/10 border border-sky-500/20 px-4 py-2 rounded-full shadow-inner">支援語音對答 ｜ 影像辨識 ｜ 基地資料</p>
+                        <h3 class="text-xl font-black tracking-[0.2em] mb-3 text-white drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]">Leon-OS 智能中樞</h3>
+                        <p class="text-[11px] text-sky-400 font-mono tracking-wide mb-8 bg-sky-500/10 border border-sky-500/20 px-4 py-2 rounded-full shadow-[inset_0_0_10px_rgba(56,189,248,0.1)]">量子運算核心 ｜ 視覺神經分析 ｜ 基地資料庫</p>
                         <div id="chat-ai-chips" class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md"></div>
                     </div>
                 </div>
 
-                <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/95 to-transparent pt-12 pb-4 px-4 md:px-5 z-20">
+                <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/95 to-transparent pt-12 pb-6 px-4 md:px-5 z-20">
                     <div class="max-w-3xl mx-auto relative">
                         
                         <div class="flex justify-between items-end mb-2 px-2">
@@ -327,28 +326,29 @@
                                 </div>
                                 
                                 <div class="relative">
-                                    <button onclick="toggleAIDropdown(event)" class="flex items-center gap-1.5 text-[10px] bg-[#111] border border-[#333] px-2.5 py-1.5 rounded-lg hover:border-sky-500/50 hover:text-sky-400 transition-all font-mono text-zinc-300 shadow-md">
+                                    <button onclick="toggleAIDropdown(event)" class="flex items-center gap-2 text-xs bg-[#111] border border-[#333] px-3 py-2 rounded-xl hover:border-sky-500/50 hover:text-sky-400 transition-all font-mono text-zinc-300 shadow-md">
                                         <i class="fa-solid fa-microchip text-sky-500"></i>
-                                        <span id="ai-dropdown-display">載入中...</span>
-                                        <i id="ai-dropdown-arrow" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+                                        <span id="ai-dropdown-display" class="font-bold tracking-wider">🔮 量子核心 (自動)</span>
+                                        <i id="ai-dropdown-arrow" class="fa-solid fa-chevron-down transition-transform duration-300 ml-1"></i>
                                     </button>
-                                    <div id="ai-dropdown-menu" class="hidden absolute bottom-full right-0 mb-2 w-44 bg-[#111] border border-[#333] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.9)] overflow-hidden transition-all duration-300 opacity-0 scale-95 origin-bottom-right z-50">
-                                        <button onclick="selectAIEngine('groq', 'Groq 引擎 (極速)', this)" class="w-full text-left px-4 py-3 text-xs text-white hover:bg-[#222] border-b border-[#222] flex items-center gap-2 group"><i class="fa-solid fa-bolt text-orange-400 group-hover:scale-110 transition-transform w-4"></i> Groq 引擎 (極速)</button>
-                                        <button onclick="selectAIEngine('gemini', 'Gemini 引擎 (全能)', this)" class="w-full text-left px-4 py-3 text-xs text-zinc-300 hover:bg-[#222] hover:text-white border-b border-[#222] flex items-center gap-2 group"><i class="fa-solid fa-sparkles text-sky-400 group-hover:scale-110 transition-transform w-4"></i> Gemini 引擎 (全能)</button>
-                                        <button onclick="selectAIEngine('vision', '視覺辨識模型 (看圖)', this)" class="w-full text-left px-4 py-3 text-xs text-zinc-300 hover:bg-[#222] hover:text-white border-b border-[#222] flex items-center gap-2 group"><i class="fa-solid fa-eye text-pink-400 group-hover:scale-110 transition-transform w-4"></i> 視覺辨識模型 (看圖)</button>
-                                        <button onclick="selectAIEngine('local', '網站內建模型 (離線)', this)" class="w-full text-left px-4 py-3 text-xs text-zinc-300 hover:bg-[#222] hover:text-white flex items-center gap-2 group"><i class="fa-solid fa-database text-green-400 group-hover:scale-110 transition-transform w-4"></i> 網站專屬模型 (離線)</button>
+                                    
+                                    <div id="ai-dropdown-menu" class="hidden absolute bottom-full right-0 mb-3 w-60 bg-[#111]/95 backdrop-blur-xl border border-[#444] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden transition-all duration-300 opacity-0 scale-95 origin-bottom-right z-50">
+                                        <button onclick="selectAIEngine('auto', '🔮 量子核心 (自動)', this)" class="w-full text-left px-5 py-4 text-sm font-bold text-white hover:bg-sky-500/20 border-b border-[#222] flex items-center gap-3 group transition-colors"><i class="fa-solid fa-wand-magic-sparkles text-purple-400 group-hover:scale-110 transition-transform w-5 text-center"></i> 量子核心 (自動判斷)</button>
+                                        <button onclick="selectAIEngine('groq', '⚡ 迅捷大腦 (Groq)', this)" class="w-full text-left px-5 py-4 text-sm font-bold text-zinc-300 hover:bg-sky-500/20 border-b border-[#222] flex items-center gap-3 group transition-colors"><i class="fa-solid fa-bolt text-orange-400 group-hover:scale-110 transition-transform w-5 text-center"></i> 迅捷大腦 (Groq 極速)</button>
+                                        <button onclick="selectAIEngine('gemini', '👁️ 視覺神經 (Gemini)', this)" class="w-full text-left px-5 py-4 text-sm font-bold text-zinc-300 hover:bg-sky-500/20 border-b border-[#222] flex items-center gap-3 group transition-colors"><i class="fa-solid fa-eye text-sky-400 group-hover:scale-110 transition-transform w-5 text-center"></i> 視覺神經 (Gemini 2.5)</button>
+                                        <button onclick="selectAIEngine('local', '💾 基地檔案 (離線)', this)" class="w-full text-left px-5 py-4 text-sm font-bold text-zinc-300 hover:bg-sky-500/20 flex items-center gap-3 group transition-colors"><i class="fa-solid fa-database text-green-400 group-hover:scale-110 transition-transform w-5 text-center"></i> 基地檔案 (離線助理)</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="bg-[#121212] border border-white/10 rounded-[28px] flex flex-col shadow-[0_15px_50px_rgba(0,0,0,0.8)] transition-all duration-300 focus-within:border-sky-500/50 focus-within:shadow-[0_0_30px_rgba(56,189,248,0.15)] relative overflow-hidden group">
-                            <textarea id="ai-input" rows="1" onkeypress="handleAIKeyPress(event)" oninput="this.style.height = '';this.style.height = Math.min(this.scrollHeight, 120) + 'px'" placeholder="輸入問題、上傳圖片或點擊麥克風說話..." class="w-full bg-transparent text-white px-6 pt-5 pb-3 resize-none outline-none max-h-[120px] min-h-[60px] text-[15px] placeholder-zinc-500 leading-relaxed no-scrollbar relative z-10"></textarea>
+                            <textarea id="ai-input" rows="1" onkeypress="handleAIKeyPress(event)" oninput="this.style.height = '';this.style.height = Math.min(this.scrollHeight, 120) + 'px'" placeholder="輸入問題 (Shift+Enter 換行，Enter 送出)..." class="w-full bg-transparent text-white px-6 pt-5 pb-3 resize-none outline-none max-h-[120px] min-h-[60px] text-[15px] placeholder-zinc-500 leading-relaxed no-scrollbar relative z-10"></textarea>
                             
                             <div class="flex justify-between items-end px-3 pb-3 relative z-10">
                                 <div class="flex items-center gap-1 pl-2">
                                     <input type="file" id="ai-file-input" accept="image/*" class="hidden" onchange="handleAIFileUpload(event)">
-                                    <button onclick="document.getElementById('ai-file-input').click()" class="w-9 h-9 rounded-full text-zinc-400 hover:text-sky-400 hover:bg-white/5 transition-all flex items-center justify-center" title="上傳圖片 (建議切換至視覺模型)">
+                                    <button onclick="document.getElementById('ai-file-input').click()" class="w-9 h-9 rounded-full text-zinc-400 hover:text-sky-400 hover:bg-white/5 transition-all flex items-center justify-center" title="上傳圖片">
                                         <i class="fa-solid fa-image text-[15px]"></i>
                                     </button>
                                     <button id="mic-btn" onclick="toggleVoiceInput()" class="w-9 h-9 rounded-full text-zinc-400 hover:text-sky-400 hover:bg-white/5 transition-all flex items-center justify-center" title="語音輸入">
@@ -359,10 +359,10 @@
                                     </button>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <button id="ai-stop-btn" onclick="stopAIGeneration()" class="hidden w-10 h-10 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
+                                    <button id="ai-stop-btn" onclick="stopAIGeneration()" class="hidden w-10 h-10 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-500/30">
                                         <i class="fa-solid fa-square text-[12px]"></i>
                                     </button>
-                                    <button id="ai-send-btn" onclick="sendAIMessage()" class="w-10 h-10 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-black flex items-center justify-center hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(56,189,248,0.4)] disabled:opacity-20 disabled:cursor-not-allowed">
+                                    <button id="ai-send-btn" onclick="sendAIMessage()" class="w-10 h-10 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-black flex items-center justify-center hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(56,189,248,0.4)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none">
                                         <i class="fa-solid fa-arrow-up text-base"></i>
                                     </button>
                                 </div>
@@ -376,8 +376,9 @@
         <section id="page-timeline" class="page">
             <h2 class="text-3xl font-black text-gradient-blue mb-16 text-center tracking-[0.25em] drop-shadow-[0_0_15px_rgba(56,189,248,0.3)]">成長軌跡</h2>
             <div class="relative max-w-4xl mx-auto px-4 pb-20" id="timeline-wrapper">
-                <div class="timeline-beam"></div>
-                <div class="timeline-scanner"></div>
+                <div class="timeline-beam">
+                    <div class="timeline-scanner"></div>
+                </div>
                 <div id="timeline-nodes-container" class="relative z-10 w-full"></div>
             </div>
         </section>
@@ -479,7 +480,6 @@
     </audio>
 
     <script>
-        // 頁面載入特效
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash');
@@ -490,7 +490,6 @@
             }, 800);
         });
 
-        // PWA Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(err => {
@@ -499,7 +498,6 @@
             });
         }
 
-        // BGM 控制
         let isBgmPlaying = false;
         function toggleBGM() {
             const audio = document.getElementById('bgm-audio');
@@ -532,7 +530,6 @@
             isBgmPlaying = !isBgmPlaying;
         }
 
-        // 低效能模式控制
         function togglePerfMode() {
             const isPerfMode = document.getElementById('perf-toggle').checked;
             const bgEffects = document.getElementById('bg-effects');
@@ -546,7 +543,6 @@
             }
         }
 
-        // 設定選單開關
         function toggleSettings() {
             const modal = document.getElementById('settings-modal');
             const content = document.getElementById('settings-content');
@@ -567,7 +563,6 @@
             }
         }
 
-        // ================= AI 點擊頭像載入動畫邏輯 =================
         function triggerAILoading() {
             const overlay = document.getElementById('ai-loading-overlay');
             if(!overlay) return;
@@ -587,7 +582,6 @@
             }, 2500);
         }
 
-        // ================= 成長軌跡 (動態計算數量並跑到底) =================
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.target.id === 'page-timeline' && mutation.target.classList.contains('active')) {
@@ -607,7 +601,6 @@
             
             if(!scanner) return;
 
-            // 狀態重置
             scanner.style.transition = 'none';
             scanner.style.top = '0%';
             items.forEach(item => item.classList.remove('lit'));
@@ -616,19 +609,16 @@
                 const totalItems = items.length;
                 const totalDuration = totalItems > 0 ? totalItems * 0.7 : 2; 
                 
-                // 光束往下跑到 100%
                 scanner.style.transition = `top ${totalDuration}s linear, opacity 0.3s`;
                 scanner.style.opacity = '1';
                 scanner.style.top = '100%'; 
 
-                // 依序點亮所有卡片 (圓點發光爆發，卡片浮現)
                 for(let i = 0; i < totalItems; i++) {
                     setTimeout(() => { 
                         items[i].classList.add('lit'); 
                     }, 200 + (i * 700)); 
                 }
 
-                // 全部跑完後光束消失
                 setTimeout(() => { 
                     scanner.style.opacity = '0'; 
                 }, totalDuration * 1000 + 400);
@@ -636,8 +626,8 @@
         }
     </script>
 
-    <script src="zcsn_qa.js?v=14.0"></script>
-    <script src="zcsn_quiz.js?v=14.0"></script>
-    <script src="app.js?v=14.0"></script>
+    <script src="zcsn_qa.js?v=15.0"></script>
+    <script src="zcsn_quiz.js?v=15.0"></script>
+    <script src="app.js?v=15.0"></script>
 </body>
 </html>
