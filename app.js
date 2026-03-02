@@ -1,8 +1,8 @@
 /**
  * ==========================================================================
- * 老王專屬秘密基地 - 核心邏輯腳本 (v16.0 終極商業版)
+ * 老王專屬秘密基地 - 核心邏輯腳本 (v16.1 修復版)
  * 開發者: Wang Li En
- * 架構: 嚴格人設鎖定 / 圖片視覺辨識 / 語音互動(TTS) / 用戶頻率限制 / 獨立視窗捲動
+ * 修復項目: Groq 400 錯誤修正 / 多行文字語法錯誤修正 / 增強 API 錯誤捕捉
  * ==========================================================================
  */
 
@@ -33,6 +33,16 @@ let currentAbortController = null;
 let currentAttachedImageBase64 = null; 
 let hasShownAIWarning = false; 
 
+// 🔥 新增：安全轉義 HTML 內聯屬性的輔助函數 (解決 Shift+Enter 造成的 SyntaxError)
+function escapeForInlineHandler(str) {
+    if (!str) return "";
+    return str.replace(/\\/g, '\\\\')
+              .replace(/'/g, "\\'")
+              .replace(/"/g, '&quot;')
+              .replace(/\n/g, '\\n')
+              .replace(/\r/g, '');
+}
+
 // --- 語音辨識 API (SpeechRecognition) ---
 let speechRecognition = null;
 let isRecording = false;
@@ -52,7 +62,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         }
         stopRecordingUI();
         
-        // 語音輸入完畢後，確保按鈕沒有被禁用才自動送出
         const sendBtn = document.getElementById('ai-send-btn');
         if (sendBtn && !sendBtn.disabled) {
             setTimeout(() => sendAIMessage(), 500); 
@@ -136,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function printDeveloperConsole() {
-    console.log('%c 基地 AI 系統 v16.0 %c 核心已連線 ', 
+    console.log('%c 基地 AI 系統 v16.1 %c 核心已連線 ', 
         'background:#0ea5e9; color:#fff; border-radius:3px 0 0 3px; padding:4px; font-weight:bold;', 
         'background:#111; color:#0ea5e9; border-radius:0 3px 3px 0; padding:4px; font-weight:bold;'
     );
@@ -200,11 +209,6 @@ function playSuccessSound() {
     try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = 'triangle'; osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(800, ctx.currentTime + 0.2); gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4); } catch(e) {}
 }
 
-/**
- * ==========================================================================
- * 核心路由與動畫：沉浸式分頁切換 + 免責聲明
- * ==========================================================================
- */
 window.switchTab = function(tabId, btn) {
     playClickSound();
     const executeSwitch = () => {
@@ -221,7 +225,6 @@ window.switchTab = function(tabId, btn) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         if(tabId === 'page-timeline') initTimelineAnimation();
         
-        // 🔥 AI 免責聲明
         if(tabId === 'page-ai' && !hasShownAIWarning) {
             hasShownAIWarning = true;
             setTimeout(() => {
@@ -377,6 +380,7 @@ window.handleSearchInput = function() {
     currentPage = 1; renderQA(currentPage);
 };
 
+// 🔥 已加入安全轉義，防止多行資料造成 Syntax Error
 window.renderQA = function(page) {
     const list = document.getElementById('qa-list'); const controls = document.getElementById('pagination-controls'); 
     if(!list || !controls) return;
@@ -387,8 +391,9 @@ window.renderQA = function(page) {
     
     currentItems.forEach((item, index) => {
         const delay = index * 0.05;
+        const safeA = escapeForInlineHandler(item.a);
         list.innerHTML += `
-            <div class="premium-card p-6 cursor-pointer flex flex-col justify-between group hover:bg-[#111] transition-all duration-300" style="animation: cinematicReveal 0.5s ease backwards; animation-delay: ${delay}s;" onclick="showAnswer(event, '${item.a.replace(/'/g, "\\'")}')">
+            <div class="premium-card p-6 cursor-pointer flex flex-col justify-between group hover:bg-[#111] transition-all duration-300" style="animation: cinematicReveal 0.5s ease backwards; animation-delay: ${delay}s;" onclick="showAnswer(event, '${safeA}')">
                 <div class="flex items-center gap-3 mb-4"><div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#333] to-[#111] border border-sky-500/30 text-sky-500 flex items-center justify-center font-black text-[11px] shadow-[0_0_10px_rgba(56,189,248,0.1)] group-hover:scale-110 transition-transform">Q</div></div>
                 <h3 class="font-bold text-white text-sm pr-8 leading-relaxed group-hover:text-sky-400 transition-colors">${item.q}</h3>
             </div>`;
@@ -405,11 +410,6 @@ window.renderQA = function(page) {
 window.changePageTo = function(p) { playClickSound(); currentPage = p; renderQA(p); window.scrollTo({top: document.getElementById('qa-search').offsetTop - 20, behavior: 'smooth'}); };
 window.showAnswer = function(e, ans) { if(e.target.closest('button')) return; playClickSound(); gainExp(2, true); PremiumSwal.fire({ html: `<div class="text-left"><div class="text-xs text-sky-500 font-black mb-3 flex items-center gap-2"><i class="fa-solid fa-comment-dots"></i> 找到答案囉！</div><div class="text-base text-white leading-relaxed font-medium">${ans}</div></div>`, showConfirmButton: false, timer: 4000, timerProgressBar: true }); };
 
-/**
- * ==========================================================================
- * ID 卡生成 (全面中文化)
- * ==========================================================================
- */
 window.generateIDCard = function() {
     const nameInput = document.getElementById('id-name').value.trim() || "尊榮粉絲"; playClickSound();
     PremiumSwal.fire({ title: '專屬製卡中...', text: '正在為你量身打造粉絲卡', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
@@ -468,11 +468,6 @@ function endQuiz() {
     setTimeout(() => { area.classList.replace('flex','hidden'); intro.classList.remove('hidden'); intro.style.opacity = '1'; let rank = ""; if(score === 100) rank = "🏆 完美滿分神級粉絲"; else if(score >= 80) rank = "🥇 核心護衛隊"; else if(score >= 60) rank = "🥈 合格粉絲"; else rank = "🥉 假粉警報！需要多補課了"; PremiumSwal.fire({ title: '測驗評估完成', html: `<div class="text-6xl my-4 drop-shadow-[0_0_20px_rgba(56,189,248,0.6)] font-black text-transparent bg-clip-text bg-gradient-to-br from-sky-300 to-sky-600">${score}</div><div class="text-lg font-bold text-white mb-2">${rank}</div><p class="text-zinc-400 text-sm border-t border-[#333] pt-3 mt-3">已為你增加 ${score} EXP，快去主頁看看你的等級有沒有提升吧！</p>` }); }, 500);
 }
 
-/**
- * ==========================================================================
- * 🔥 完美置中動態流光時間軸 (Timeline)
- * ==========================================================================
- */
 function initTimelineAnimation() {
     const timelineData = [
         { date: "2024.06.02", title: "初次亮相", desc: "在 TikTok 上發佈了第 1 則貼文，夢想啟航。", icon: "fa-rocket" },
@@ -505,20 +500,12 @@ function initTimelineAnimation() {
     }).join('');
 }
 
-/**
- * ==========================================================================
- * Leon-OS 智能中樞核心大腦 (支援語音、影像辨識、深度記憶)
- * ==========================================================================
- */
-
-// --- 頻率限制 (Rate Limit) ---
 function checkRateLimit() {
     const today = new Date().toDateString();
     if (appSettings.aiLimitDate !== today) {
         appSettings.aiLimitDate = today;
         appSettings.aiUsageCount = 0;
     }
-    // 每日限制 50 次呼叫
     if (appSettings.aiUsageCount >= 50) {
         PremiumSwal.fire({
             title: '能量耗盡 💤',
@@ -533,7 +520,6 @@ function checkRateLimit() {
     return true;
 }
 
-// --- 語音輸入 UI 控制 ---
 window.toggleVoiceInput = function() {
     if (!speechRecognition) {
         PremiumSwal.fire({ title: '不支援語音輸入', text: '您的瀏覽器不支援語音功能，建議使用 Chrome 或 Safari。', icon: 'error' });
@@ -561,7 +547,6 @@ function stopRecordingUI() {
     setAiStatus('系統待命中', 'green-500');
 }
 
-// --- AI 語音回覆 (TTS) ---
 window.toggleVoiceReply = function() {
     appSettings.voiceReply = !appSettings.voiceReply;
     saveSettings();
@@ -604,7 +589,6 @@ function speakAIText(text) {
     window.speechSynthesis.speak(utterance);
 }
 
-// --- 介面選單 ---
 window.toggleAIDropdown = function(e) {
     e.stopPropagation();
     const menu = document.getElementById('ai-dropdown-menu');
@@ -637,43 +621,28 @@ window.selectAIEngine = function(value, text, btnElement) {
     PremiumSwal.fire({ title: '<i class="fa-solid fa-robot text-sky-500"></i> 模組切換', html: `<div class="text-zinc-300 text-sm mt-2">量子核心已切換至：<br><b class="text-sky-400 text-base block mt-2">${text}</b></div>`, showConfirmButton: false, timer: 1200 });
 };
 
-// --- 介面籌碼 ---
+// 🔥 已加入安全轉義，防止籌碼引發 Syntax Error
 function renderAISuggestions() {
     const container = document.getElementById('chat-ai-chips') || document.getElementById('home-ai-chips');
     if (!container || !qaData || qaData.length === 0) return;
     const shuffledQA = [...qaData].sort(() => 0.5 - Math.random()); const selectedQA = shuffledQA.slice(0, 4); const icons = ['💡', '💭', '✨', '💬'];
     container.innerHTML = selectedQA.map((item, index) => {
-        const randomIcon = icons[index]; const safeQ = item.q.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const randomIcon = icons[index]; const safeQ = escapeForInlineHandler(item.q);
         return `<button onclick="document.getElementById('ai-input').value='${safeQ}'; document.getElementById('ai-input').focus();" class="text-left bg-zinc-900/50 hover:bg-zinc-800 border border-white/5 hover:border-white/10 p-4 rounded-2xl transition-all group overflow-hidden shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.15)] hover:-translate-y-1"><div class="text-zinc-300 text-sm font-bold mb-1 group-hover:text-sky-400 transition-colors">${randomIcon} 問問中樞</div><div class="text-zinc-500 text-xs truncate w-full tracking-wide" title="${item.q}">${item.q}</div></button>`;
     }).join('');
 }
 
-// --- 🔥 UI 狀態切換 (允許打字，鎖定按鈕) ---
 function updateUIState(isGenerating) {
     const sendBtn = document.getElementById('ai-send-btn');
     const stopBtn = document.getElementById('ai-stop-btn');
-    
-    // 將發送按鈕設置為禁用狀態，讓使用者知道不能按，但可以繼續在輸入框打字
-    if (sendBtn) {
-        sendBtn.disabled = isGenerating;
-    }
-    
-    // 控制停止按鈕顯示隱藏
-    if (stopBtn) {
-        if (isGenerating) {
-            stopBtn.classList.remove('hidden');
-        } else {
-            stopBtn.classList.add('hidden');
-        }
-    }
+    if (sendBtn) sendBtn.disabled = isGenerating;
+    if (stopBtn) isGenerating ? stopBtn.classList.remove('hidden') : stopBtn.classList.add('hidden');
 }
 
-// --- 🔥 鍵盤事件處理 (Shift+Enter 換行, Enter 送出) ---
 window.handleAIKeyPress = function(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault(); // 阻止原生的換行行為
+        event.preventDefault(); 
         const sendBtn = document.getElementById('ai-send-btn');
-        // 確認按鈕存在，且不是在禁用狀態（非生成中）
         if (sendBtn && !sendBtn.disabled) {
             sendAIMessage();
         }
@@ -714,7 +683,6 @@ window.handleAIFileUpload = function(event) {
         if(preview) preview.src = currentAttachedImageBase64;
         if(container) container.classList.remove('hidden');
         
-        // 若使用者未手動切換到視覺引擎，彈窗提示
         if(currentAIEngine === 'groq' || currentAIEngine === 'local') {
             PremiumSwal.fire({
                 title: '已掛載視覺模組',
@@ -736,10 +704,8 @@ window.removeAIAttachment = function() {
     if(container) container.classList.add('hidden');
 };
 
-// --- AI 核心邏輯 (The Brain) ---
 class AIEngine {
     
-    // 嚴格的 Leon-OS 人設定義
     static getSystemPrompt() {
         const contextData = qaData.map(item => `Q: ${item.q}\nA: ${item.a}`).join("\n\n");
         return `你是「老王專屬秘密基地」的官方智能中樞，代號為「Leon-OS」。
@@ -763,13 +729,12 @@ ${contextData}`;
         if (aiMemory.length > 20) aiMemory = aiMemory.slice(aiMemory.length - 20);
 
         try {
-            // 自動路由邏輯
             let activeEngine = currentAIEngine;
             if (activeEngine === 'auto' || (currentAttachedImageBase64 && activeEngine === 'groq')) {
                 if (currentAttachedImageBase64) {
-                    activeEngine = 'vision'; // 強制使用視覺模型
+                    activeEngine = 'vision'; 
                 } else {
-                    activeEngine = 'groq'; // 純文字使用 Groq 最快
+                    activeEngine = 'groq'; 
                 }
             }
 
@@ -779,46 +744,40 @@ ${contextData}`;
         } catch (error) {
             if (error.name === 'AbortError') throw error;
             console.error("AI API 發生錯誤:", error);
-            return this.callLocal(text) + "\n\n*(系統提示：目前外部連線不穩，我正使用本地量子記憶庫回答您。)*";
+            return this.callLocal(text) + `\n\n*(系統提示：外部連線異常 [${error.message}]，我正使用本地量子記憶庫回答您。)*`;
         }
     }
 
+    // 🔥 修復 400 錯誤：強迫 Groq 只處理純文字，過濾掉歷史對話中的圖片資訊
     static async callGroq(signal) {
         if (!GROQ_KEY || GROQ_KEY.length < 20) throw new Error("Missing Groq Key");
         
         const prompt = this.getSystemPrompt();
         let messages = [{ role: "system", content: prompt }];
-        let hasImage = false;
 
+        // 對於 Groq，我們嚴格只把對話以 text 的形式丟過去，不要使用 image_url
         aiMemory.forEach(msg => {
-            if (msg.role === 'user' && msg.image) {
-                hasImage = true;
-                messages.push({
-                    role: "user",
-                    content: [
-                        { type: "text", text: msg.content },
-                        { type: "image_url", image_url: { url: msg.image } }
-                    ]
-                });
-            } else {
-                messages.push({ role: msg.role, content: msg.content });
-            }
+            messages.push({ role: msg.role, content: msg.content });
         });
-
-        const modelName = hasImage ? "llama-3.2-90b-vision-preview" : "llama-3.3-70b-versatile";
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY.trim()}` }, 
             signal: signal, 
             body: JSON.stringify({ 
-                model: modelName, 
+                model: "llama-3.3-70b-versatile", 
                 messages: messages, 
                 temperature: 0.6 
             }) 
         });
         
-        if (!response.ok) throw new Error(`Groq API Error`);
+        // 加入更完善的錯誤提取機制，讓你之後在 console 可以直接看懂原因
+        if (!response.ok) {
+            let errText = "Unknown Error";
+            try { const errData = await response.json(); errText = errData.error?.message || response.statusText; } catch(e){}
+            throw new Error(`Groq API Error: ${errText}`);
+        }
+        
         const data = await response.json(); 
         const reply = data.choices[0].message.content;
         aiMemory.push({ role: "assistant", content: reply });
@@ -857,7 +816,12 @@ ${contextData}`;
             }) 
         });
         
-        if (!response.ok) throw new Error(`Gemini Error`);
+        if (!response.ok) {
+            let errText = "Unknown Error";
+            try { const errData = await response.json(); errText = errData.error?.message || response.statusText; } catch(e){}
+            throw new Error(`Gemini Error: ${errText}`);
+        }
+        
         const data = await response.json(); 
         const reply = data.candidates[0].content.parts[0].text;
         aiMemory.push({ role: "assistant", content: reply });
@@ -890,7 +854,6 @@ ${contextData}`;
     }
 }
 
-// --- 酷炫的 Markdown 打字機渲染 ---
 function streamMarkdown(elementId, markdownString, onComplete) {
     const el = document.getElementById(elementId); 
     if (!el) { if(onComplete) onComplete(); return; }
@@ -911,7 +874,6 @@ function streamMarkdown(elementId, markdownString, onComplete) {
 
         el.innerHTML = marked.parse(currentMarkdown);
         
-        // 確保滾動鎖定在獨立視窗內
         const chatWindow = document.getElementById('chat-window'); 
         if(chatWindow) chatWindow.scrollTo({ top: chatWindow.scrollHeight });
         
@@ -920,6 +882,7 @@ function streamMarkdown(elementId, markdownString, onComplete) {
     typeChar();
 }
 
+// 🔥 已加入安全轉義，防止使用者輸入的換行符號破壞結構
 window.sendAIMessage = async function() {
     const inputEl = document.getElementById('ai-input'); 
     if (!inputEl) return;
@@ -929,13 +892,11 @@ window.sendAIMessage = async function() {
     
     if(!checkRateLimit()) return;
     
-    // 將滾動定位在視窗內
     const chat = document.getElementById('chat-window');
     if (!chat) return;
 
     playClickSound(); gainExp(5, true);
     
-    // 更新 UI 狀態：鎖定按鈕，但不鎖定輸入框
     updateUIState(true);
     setAiStatus('量子運算中...', 'sky-500');
     inputEl.style.height = '60px'; 
@@ -947,7 +908,7 @@ window.sendAIMessage = async function() {
     if (emptyState) emptyState.remove();
 
     let imgHTML = currentAttachedImageBase64 ? `<img src="${currentAttachedImageBase64}" class="w-32 h-32 object-cover rounded-xl mb-2 border border-white/20 shadow-lg">` : "";
-    const safeTextForEdit = text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const safeTextForEdit = escapeForInlineHandler(text);
     
     chat.innerHTML += `
         <div class="flex justify-end w-full animate-[smoothReveal_0.4s_ease] mb-6 group">
