@@ -1,11 +1,6 @@
 {
-  "name": "老王粉絲網站",
-  "short_name": "老王QA",
-  "description": "老王專屬問答與粉絲互動平台",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#f43f5e",
+  "short_name": "老王基地",
+  "name": "老王專屬秘密基地",
   "icons": [
     {
       "src": "avatar-main.jpg",
@@ -17,5 +12,9 @@
       "sizes": "512x512",
       "type": "image/jpeg"
     }
-  ]
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#030303",
+  "background_color": "#030303"
 }
