@@ -16,7 +16,13 @@
     --beam-progress: 0%;
 }
 
-html,
+/* --- 🌟 修復核心：將 html 與 body 分開，避免大螢幕錯誤垂直置中 --- */
+html {
+    background-color: var(--bg-deep) !important;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+}
+
 body {
     background-color: var(--bg-deep) !important;
     color: #f4f4f5;
@@ -24,13 +30,10 @@ body {
     margin: 0;
     min-height: 100dvh;
     overflow-x: hidden;
-    -webkit-tap-highlight-color: transparent;
-    scroll-behavior: smooth;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* 🌟 新增這行：強制靠上對齊，解決往下掉的問題 */
+    justify-content: flex-start !important; /* 強制靠上對齊 */
 }
-
 /* 🌟 在 styles.css 隨便一個空白處加上這段，確保容器不會亂飄 */
 #page-content {
     display: flex;

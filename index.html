@@ -152,9 +152,8 @@
     <link rel="stylesheet" href="styles.css?v=20.0.0">
 </head>
 
-<body class="pb-[100px] pt-6">
-
-    <div id="page-content" style="flex:1;">
+<body class="pb-[100px] pt-6 flex flex-col justify-start min-h-screen">
+    <div id="page-content" class="flex flex-col justify-start w-full" style="flex:1;">
 
         <div id="splash"
              class="fixed inset-0 z-[999] bg-[#030303] flex flex-col items-center justify-center transition-all duration-700">
@@ -211,7 +210,7 @@
             </div>
         </header>
 
-        <main class="max-w-3xl mx-auto px-5 relative z-10" id="main-container">
+        <main class="w-full max-w-3xl mx-auto px-5 relative z-10 flex flex-col justify-start mb-auto" id="main-container">
             <section id="page-home" class="page active">
                 <article class="premium-card p-8 flex flex-col md:flex-row items-center gap-8 mb-8">
                     <div class="relative group">
