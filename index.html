@@ -120,8 +120,13 @@
 
                                 // 同步最新數值到本地
                                 window.appSettings = window.appSettings || { exp: 0 };
-                                window.appSettings.exp = userData.exp;
+                                window.appSettings.exp = userData.exp || 0;
                                 window.updateExpUI?.();
+                                
+                                // 🌟 解決無限空投 Bug 的關鍵：把同步後的分數強制存檔，打破無限迴圈
+                                if (typeof window.saveSettings === 'function') {
+                                    window.saveSettings();
+                                }
                             } else {
                                 // 新用戶初次建立資料
                                 const fallbackName = user.displayName || "老王鐵粉";
