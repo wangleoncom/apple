@@ -1,9 +1,11 @@
 // --- 更新日誌 ---
-const APP_VERSION = '20.0.0';
+const APP_VERSION = '21.0.0';
 
 // --- 系統全域防呆與美化變數 ---
 window.playClickSound = window.playClickSound || function() {};
 window.playSuccessSound = window.playSuccessSound || function() {};
+window.preloadedImages = window.preloadedImages || {};
+window.isLoggedIn = window.isLoggedIn || false;
 
 const PremiumSwal = Swal.mixin({
     customClass: {
@@ -17,6 +19,12 @@ const PremiumSwal = Swal.mixin({
 });
 
 const CHANGELOG = [
+    { ver: '21.0.0', date: '2026-03-06', items: [
+        '系統效能與快取機制全面升級',
+        '修復畫面排版往下掉的問題',
+        '修正圖片預載入的全域變數錯誤',
+        '實裝成就徽章解鎖與動態卡片生成'
+    ]},
     { ver: '20.0.0', date: '2026-03-05', items: [
         '強制所有人重新登入驗證身分',
         '全新等級系統：解鎖「基地守護者」等高級頭銜',
@@ -30,15 +38,7 @@ const CHANGELOG = [
         '成長軌跡改為「滑到哪裡亮到哪裡」的捲動觸發顯示',
         '頁尾改為永遠貼齊頁面底部（短頁不漂浮）',
         'AI 分頁鎖定判斷修正（未登入不可進入/送出）'
-    ]},
-    { ver: '18.1.0', date: '2026-03-03', items: [
-        '登入/註冊 UI 全面升級（更精緻的視覺與交互）',
-        '未登入禁止使用 AI（會引導至登入視窗）',
-        '系統控制中心新增：更新日誌 / QA 顯示數量 / 低耗能模式',
-        'Discord 社群按鈕改為官方品牌色',
-        '頁尾新增版權與聯絡 IG'
-    ]},
-    { ver: '18.0.0', date: '2025-??-??', items: ['既有功能版本（AI / QA / EXP / 公告）']}
+    ]}
 ];
 
 // --- 強制更新與驗證機制 ---
@@ -47,18 +47,12 @@ const CHANGELOG = [
         const k = 'wangAppVersion';
         const prev = localStorage.getItem(k);
         
-        // 如果版本號不同，或是從來沒存過版本號
         if(prev !== APP_VERSION){
             console.log("偵測到新版本，準備執行強制更新...");
-            
-            // 1. 更新本地版本號
             localStorage.setItem(k, APP_VERSION);
-
-            // 2. 清除舊版的本地設定 (避免舊格式導致報錯)
             try{ localStorage.removeItem('wangAppConfig_V18_PRO'); }catch(e){}
             try{ localStorage.removeItem('wangAppConfig_V19_PRO'); }catch(e){}
 
-            // 3. 強制解除安裝舊的 Service Worker
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for(let registration of registrations) {
@@ -67,25 +61,20 @@ const CHANGELOG = [
                 });
             }
 
-            // 4. 清除瀏覽器 Cache Storage (雙重保險，手動砍快取)
             if ('caches' in window) {
                 caches.keys().then(function(names) {
                     for (let name of names) caches.delete(name);
                 });
             }
 
-            // 5. 清除 Firebase Auth 的 IndexedDB (這會導致用戶被強制登出，需要重新登入)
-            // 這是為了配合你的需求：「強制所有人重新登入驗證身分」
             const request = window.indexedDB.deleteDatabase('firebaseLocalStorageDb');
             request.onsuccess = function () {
-                // 6. 強制重新載入網頁，並加上時間戳 (t=...) 破壞瀏覽器死記憶
-                const url = new URL(location.href.split('?')[0]); // 拿掉舊參數
+                const url = new URL(location.href.split('?')[0]); 
                 url.searchParams.set('v', APP_VERSION);
                 url.searchParams.set('t', Date.now()); 
                 location.replace(url.toString());
             };
             
-            // 如果 indexedDB 清除失敗或卡住，設定 1 秒後照樣強制重整
             setTimeout(() => {
                 const url = new URL(location.href.split('?')[0]);
                 url.searchParams.set('v', APP_VERSION);
@@ -125,15 +114,9 @@ window.setQaPerPage = function(value){
 
 // ==========================================================================
 // 老王專屬秘密基地 - 核心邏輯腳本 (v21.0.0 跨平台整合版)
-// 開發者: Wang Li En
 // ==========================================================================
 
-// 用來暫存從資料庫抓下來的金鑰，避免每次發送訊息都要重新連線資料庫
-let dynamicApiKeys = {
-    gemini: [],
-    groq: []
-};
-
+let dynamicApiKeys = { gemini: [], groq: [] };
 const qaData = window.QA_DB || window.wangQuiz_DB || []; 
 const quizData = window.QUIZ_DB || window.wangQuiz_DB || [];
 const STORAGE_KEY = 'wangAppConfig_V19_PRO';
@@ -157,11 +140,7 @@ let hasShownAIWarning = false;
 
 function escapeForInlineHandler(str) {
     if (!str) return "";
-    return str.replace(/\\/g, '\\\\')
-              .replace(/'/g, "\\'")
-              .replace(/"/g, '&quot;')
-              .replace(/\n/g, '\\n')
-              .replace(/\r/g, '');
+    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n').replace(/\r/g, '');
 }
 
 // --- 語音辨識 API ---
@@ -184,9 +163,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         stopRecordingUI();
         
         const sendBtn = document.getElementById('ai-send-btn');
-        if (sendBtn && !sendBtn.disabled) {
-            setTimeout(() => window.sendAIMessage(), 500); 
-        }
+        if (sendBtn && !sendBtn.disabled) { setTimeout(() => window.sendAIMessage(), 500); }
     };
     
     speechRecognition.onerror = (event) => {
@@ -198,7 +175,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     speechRecognition.onend = () => { stopRecordingUI(); };
 }
 
-// === 基地公告資料庫 (改為從雲端動態獲取) ===
+// === 基地公告資料庫 ===
 let announcementsData = [];
 
 async function fetchAnnouncements() {
@@ -226,15 +203,9 @@ async function fetchAnnouncements() {
             });
         });
 
-        // 🌟 強制置入防盜片聲明公告 (unshift 會把它排在最前面)
         loadedAnnouncements.unshift({
-            id: 'anti-theft-warning-001',
-            title: "🚨 嚴重警告：影片盜用聲明",
-            date: new Date().toISOString().split('T')[0],
-            type: "warning",
-            isPinned: true, // 設定為置頂
-            summary: "近期發現有假帳號盜用老王的影片，請大家認明官方唯一帳號並協助檢舉！",
-            image: "fake-account.jpg", // ⚠️ 請將盜用者的截圖命名為 fake-account.jpg 並放在專案資料夾中
+            id: 'anti-theft-warning-001', title: "🚨 嚴重警告：影片盜用聲明", date: new Date().toISOString().split('T')[0], type: "warning", isPinned: true, 
+            summary: "近期發現有假帳號盜用老王的影片，請大家認明官方唯一帳號並協助檢舉！", image: "fake-account.jpg", 
             content: `
                 <div class="text-left space-y-4 text-sm text-zinc-300 mt-2">
                     <p class="text-red-400 font-bold text-base">⚠️ 近期我們收到舉報，有不肖人士在 TikTok 盜用老王的影片並建立假帳號！</p>
@@ -248,12 +219,8 @@ async function fetchAnnouncements() {
 
         announcementsData = loadedAnnouncements;
         renderAnnouncements(); 
-    } catch(e) {
-        console.error("無法載入雲端公告", e);
-    }
+    } catch(e) { console.error("無法載入雲端公告", e); }
 }
-
-
 
 function renderAnnouncements() {
     const homeContainer = document.getElementById('home-pinned-announcements');
@@ -292,7 +259,7 @@ function renderAnnouncements() {
     if (homeHTML) { homeContainer.innerHTML = `<h3 class="text-sm font-bold text-sky-200/70 mb-4 tracking-widest pl-2 flex items-center"><i class="fa-solid fa-bullhorn text-red-500 mr-2 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse"></i> 基地最新通報</h3><div class="space-y-4">${homeHTML}</div>`; }
     if (pageHTML) { pageContainer.innerHTML = pageHTML; } else { pageContainer.innerHTML = `<div class="text-center text-sky-200/50 py-12 text-sm bg-[#040d1a] rounded-2xl border border-sky-500/20">目前無任何基地公告</div>`; }
 }
-let preloadedImages = {};
+
 window.openAnnouncement = function(id) {
     if(typeof playClickSound === 'function') playClickSound(); 
     const data = announcementsData.find(item => item.id === id); 
@@ -314,7 +281,7 @@ window.openAnnouncement = function(id) {
         });
     };
 
-    if (data.image && !preloadedImages[data.id]) {
+    if (data.image && !window.preloadedImages[data.id]) {
         Swal.fire({ 
             html: `
                 <div class="flex flex-col items-center justify-center p-4">
@@ -332,7 +299,7 @@ window.openAnnouncement = function(id) {
             backdrop: `rgba(0,0,0,0.8) backdrop-filter: blur(8px)` 
         });
         const img = new Image();
-        img.onload = () => { preloadedImages[data.id] = img; Swal.close(); setTimeout(showModal, 150); };
+        img.onload = () => { window.preloadedImages[data.id] = img; Swal.close(); setTimeout(showModal, 150); };
         img.onerror = () => { Swal.close(); setTimeout(showModal, 150); };
         img.src = data.image;
     } else {
@@ -813,15 +780,12 @@ window.removeAIAttachment = function() {
 
 class AIEngine {
 
-    // 🔥 新增：動態從 Firebase 獲取金鑰的函數
     static async getKeys(type) {
-        // 如果已經抓過金鑰了，就直接回傳，節省資料庫讀取次數
         if (dynamicApiKeys[type] && dynamicApiKeys[type].length > 0) {
             return dynamicApiKeys[type];
         }
         
         try {
-            // 向 Firestore 請求 system_config/api_keys
             const docRef = window.firebaseApp.doc(window.firebaseApp.db, "system_config", "api_keys");
             const docSnap = await window.firebaseApp.getDoc(docRef);
             if (docSnap.exists()) {
@@ -860,10 +824,6 @@ class AIEngine {
 8. 專有名詞保留：遇到科技、品牌等專有名詞，請保持原文。
 9. 對話風格：保持專業、清晰且帶有溫度的科技感。
 10. 質感排版：回覆內容請善用 Markdown 語法（粗體、列表等）。
-
-【內容處理與安全審查】：
-11. 內容防護：嚴禁討論政治、色情、暴力等敏感話題。
-12. 跨領域專業：若粉絲詢問與老王無關的專業知識，請盡情發揮你的能力給予解答。
 
 【基地老王資料庫】：
 下方是關於老王的官方資訊。
@@ -931,7 +891,6 @@ ${contextData}`;
     }
 
     static async callGroq(signal) {
-        // 🔥 改為動態抓取金鑰
         const keys = await this.getKeys('groq');
         if (!keys || keys.length === 0) throw new Error("雲端尚未設定 Groq API 金鑰");
 
@@ -966,7 +925,6 @@ ${contextData}`;
     }
 
     static async callGemini(signal) {
-        // 🔥 改為動態抓取金鑰
         const keys = await this.getKeys('gemini');
         if (!keys || keys.length === 0) throw new Error("雲端尚未設定 Gemini API 金鑰");
 
@@ -1228,7 +1186,6 @@ window.showTermsOfService = function() {
 // 🏆 基地成就與徽章系統 (Achievement System)
 // ==========================================
 
-// 1. 定義所有可解鎖的成就徽章
 const ACHIEVEMENTS_DB = [
     { 
         id: 'new_blood', 
@@ -1282,7 +1239,6 @@ const ACHIEVEMENTS_DB = [
     }
 ];
 
-// 2. 渲染徽章牆的函數 (修改傳遞 isUnlocked 參數)
 window.renderBadges = function() {
     const container = document.getElementById('badges-container');
     if (!container) return;
@@ -1315,11 +1271,9 @@ window.renderBadges = function() {
     container.innerHTML = html;
 };
 
-// 3. 點擊徽章顯示詳細資訊與生成卡片按鈕
 window.showBadgeDetail = function(name, desc, icon, colorClass, isUnlocked) {
     if(typeof playClickSound === 'function') playClickSound();
     
-    // 如果已解鎖，加入生成卡片的按鈕
     let actionHtml = isUnlocked 
         ? `<button onclick="window.generateAchievementCard('${name}', '${desc}')" class="w-full mt-5 bg-gradient-to-r from-sky-400 to-blue-500 text-white font-black py-3 rounded-xl shadow-[0_0_15px_rgba(56,189,248,0.4)] hover:scale-105 transition-transform tracking-widest"><i class="fa-solid fa-download mr-2"></i>生成專屬成就卡</button>` 
         : `<div class="mt-5 text-xs text-red-400 font-mono bg-red-500/10 py-2.5 rounded-xl border border-red-500/20 tracking-widest"><i class="fa-solid fa-lock mr-1"></i>尚未達成解鎖條件</div>`;
@@ -1334,7 +1288,6 @@ window.showBadgeDetail = function(name, desc, icon, colorClass, isUnlocked) {
     });
 };
 
-// 🌟 新增：生成動態成就卡片的函數
 window.generateAchievementCard = function(badgeName, badgeDesc) {
     if(typeof playClickSound === 'function') playClickSound();
     Swal.fire({ title: '成就卡片生成中...', didOpen: () => Swal.showLoading(), background: 'rgba(10,16,28,0.95)' });
@@ -1343,17 +1296,14 @@ window.generateAchievementCard = function(badgeName, badgeDesc) {
     canvas.width = 1080; canvas.height = 1080;
     const ctx = canvas.getContext('2d');
 
-    // 畫背景與光暈
     ctx.fillStyle = '#020813'; ctx.fillRect(0, 0, 1080, 1080);
     const grad = ctx.createRadialGradient(540, 540, 100, 540, 540, 800);
     grad.addColorStop(0, 'rgba(56, 189, 248, 0.2)'); grad.addColorStop(1, '#020813');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1080);
     
-    // 畫科技感邊框
     ctx.strokeStyle = 'rgba(56,189,248,0.5)'; ctx.lineWidth = 8; ctx.strokeRect(50, 50, 980, 980);
     ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 4; ctx.strokeRect(80, 80, 60, 60);
 
-    // 畫文字內容
     ctx.textAlign = "center";
     ctx.fillStyle = '#bae6fd'; ctx.font = '900 50px "SF Pro Display", sans-serif'; ctx.letterSpacing = "15px";
     ctx.fillText('老王秘密基地 · 官方認證', 540, 250);
@@ -1365,7 +1315,6 @@ window.generateAchievementCard = function(badgeName, badgeDesc) {
     ctx.fillStyle = '#7dd3fc'; ctx.font = 'bold 45px monospace';
     ctx.fillText(`任務達成：${badgeDesc}`, 540, 680);
 
-    // 取得使用者資訊寫入卡片
     const currentUser = window.firebaseApp?.auth?.currentUser;
     let userIdStr = currentUser && !currentUser.isAnonymous ? currentUser.uid.slice(0, 6).toUpperCase() : "GUEST";
     const dateStr = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Taipei' }).replace(/\//g, '.');
@@ -1387,14 +1336,12 @@ window.generateAchievementCard = function(badgeName, badgeDesc) {
     }, 500);
 };
 
-// 4. 綁定更新時機 (當 EXP 變動或頁面載入時觸發)
 const originalUpdateExpUI = window.updateExpUI;
 window.updateExpUI = function() {
     if (typeof originalUpdateExpUI === 'function') originalUpdateExpUI();
-    window.renderBadges(); // EXP 改變時同步檢查徽章
+    window.renderBadges(); 
 };
 
-// 頁面載入完成後初次渲染
 window.addEventListener('load', () => {
     setTimeout(() => { window.renderBadges(); }, 1500);
 });
@@ -1403,18 +1350,12 @@ window.addEventListener('load', () => {
 // 🛠️ 核心功能修復包 (UI、存檔、切換分頁、簽到)
 // ==========================================
 
-// ==========================================
-// 🛠️ 核心功能修復包 (UI、存檔、切換分頁、簽到)
-// ==========================================
-
-// 1. 本地存檔機制 (確保 EXP 和設定不會遺失)
 window.saveSettings = window.saveSettings || function() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(window.appSettings));
     } catch(e) { console.warn("存檔失敗", e); }
 };
 
-// 讀取本地存檔 (開機時執行)
 try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -1423,7 +1364,6 @@ try {
     }
 } catch(e) {}
 
-// 2. 【終極防彈版】移除啟動載入畫面與系統初始化
 function hideSplashScreen() {
     const splash = document.getElementById('splash');
     if (splash && !splash.classList.contains('hidden')) {
@@ -1435,20 +1375,17 @@ function hideSplashScreen() {
     }
 }
 
-// 🌟 核心開機程序：確保 QA 和公告有被正確載入
 window.addEventListener('DOMContentLoaded', () => {
     if(typeof fetchAnnouncements === 'function') fetchAnnouncements();
     if(typeof initQA === 'function') initQA();
     setTimeout(hideSplashScreen, 1500); 
 });
 window.addEventListener('load', () => { setTimeout(hideSplashScreen, 800); });
-setTimeout(hideSplashScreen, 3000); // 終極保險
+setTimeout(hideSplashScreen, 3000); 
 
-// 3. 底部導航列切換邏輯 (修復閃退問題)
 window.switchTab = function(pageId, btnElement) {
     if(typeof window.playClickSound === 'function') window.playClickSound();
     
-    // 只依靠 CSS 的 .active 類別來控制顯示/隱藏，移除導致閃退的 setTimeout
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
 
@@ -1456,7 +1393,6 @@ window.switchTab = function(pageId, btnElement) {
     if (targetPage) targetPage.classList.add('active');
     if (btnElement) btnElement.classList.add('active');
 
-    // 若切換到時間軸，觸發專屬動畫
     if (pageId === 'page-timeline' && typeof window.triggerTimelineAnimation === 'function') {
         window.triggerTimelineAnimation();
     }
@@ -1464,7 +1400,6 @@ window.switchTab = function(pageId, btnElement) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// 4. 每日簽到與抽卡邏輯
 window.dailyCheckIn = window.dailyCheckIn || function() {
     if (!window.isLoggedIn) return PremiumSwal.fire('請先登入', '必須登入正式帳號才能簽到喔！', 'warning');
     const today = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Taipei' });
