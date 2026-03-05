@@ -292,7 +292,7 @@ function renderAnnouncements() {
     if (homeHTML) { homeContainer.innerHTML = `<h3 class="text-sm font-bold text-sky-200/70 mb-4 tracking-widest pl-2 flex items-center"><i class="fa-solid fa-bullhorn text-red-500 mr-2 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse"></i> 基地最新通報</h3><div class="space-y-4">${homeHTML}</div>`; }
     if (pageHTML) { pageContainer.innerHTML = pageHTML; } else { pageContainer.innerHTML = `<div class="text-center text-sky-200/50 py-12 text-sm bg-[#040d1a] rounded-2xl border border-sky-500/20">目前無任何基地公告</div>`; }
 }
-
+let preloadedImages = {};
 window.openAnnouncement = function(id) {
     if(typeof playClickSound === 'function') playClickSound(); 
     const data = announcementsData.find(item => item.id === id); 
